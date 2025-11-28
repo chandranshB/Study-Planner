@@ -75,15 +75,18 @@ def generate_checklist():
         
         prompt = f"""Based on this {course} syllabus for {year}, create a detailed study checklist.
 Break down the topics into specific, actionable study tasks.
-Return ONLY a numbered list of study topics/tasks, one per line.
+Return ONLY a JSON object with the following structure:
+{{
+    "checklist": [
+        {{
+            "title": "Topic Name",
+            "items": ["Task 1", "Task 2"]
+        }}
+    ]
+}}
 
 Syllabus:
 {syllabus}
-
-Format each item as: Topic - Subtopic or specific task
-Example: 
-1. Data Structures - Arrays and Linked Lists
-2. Algorithms - Sorting (Bubble, Quick, Merge)
 """
         
         # Call Ollama API
@@ -92,7 +95,8 @@ Example:
             json={
                 'model': model,
                 'prompt': prompt,
-                'stream': False
+                'stream': False,
+                'format': 'json'
             },
             timeout=120
         )
@@ -101,20 +105,15 @@ Example:
             result = response.json()
             generated_text = result.get('response', '')
             
-            # Parse the response into checklist items
-            lines = generated_text.strip().split('\n')
-            checklist = []
-            
-            for line in lines:
-                line = line.strip()
-                # Remove numbering and clean up
-                if line and (line[0].isdigit() or line.startswith('-') or line.startswith('•')):
-                    # Remove leading numbers, dots, dashes, bullets
-                    cleaned = line.lstrip('0123456789.-•) ').strip()
-                    if cleaned and len(cleaned) > 5:
-                        checklist.append(cleaned)
-            
-            return jsonify({'checklist': checklist})
+            try:
+                # Parse the JSON response
+                data = json.loads(generated_text)
+                checklist = data.get('checklist', [])
+                return jsonify({'checklist': checklist})
+            except json.JSONDecodeError:
+                # Fallback if JSON parsing fails
+                print("Failed to parse JSON response")
+                return jsonify({'error': 'Failed to parse AI response'}), 500
         
         return jsonify({'error': 'Failed to generate checklist'}), 500
         

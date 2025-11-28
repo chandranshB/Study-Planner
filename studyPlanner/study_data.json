@@ -1,221 +1,182 @@
 {
   "exams": [
     {
-      "id": 1764336496255,
-      "name": "Theory of Computation",
-      "date": "2025-12-19"
+      "color": "#ef4444",
+      "date": "2025-12-19",
+      "id": 1764339543283,
+      "name": "Theory of Computation"
+    },
+    {
+      "color": "#f59e0b",
+      "date": "2025-12-15",
+      "id": 1764339602234,
+      "name": "Data Structures"
+    },
+    {
+      "color": "#3b82f6",
+      "date": "2025-12-09",
+      "id": 1764339632842,
+      "name": "Vedic Management"
+    },
+    {
+      "id": 1764340028908,
+      "name": "Garhwali",
+      "date": "2025-12-06",
+      "color": "#ec4899"
+    },
+    {
+      "id": 1764340053090,
+      "name": "C++",
+      "date": "2025-12-17",
+      "color": "#8b5cf6"
+    },
+    {
+      "id": 1764340074369,
+      "name": "Psychology",
+      "date": "2025-12-11",
+      "color": "#f59e0b"
     }
   ],
   "checklist": [
     {
-      "id": 1764336353161.0674,
-      "text": "Introduction to Problem Solving Approach - Algorithmic Solution",
-      "completed": false
+      "id": 1764342780942.4597,
+      "title": "Introduction to Problem Solving Approach",
+      "color": "#3b82f6",
+      "items": [
+        {
+          "id": 1764342780942.973,
+          "text": "Analyze space and time complexity",
+          "completed": false
+        },
+        {
+          "id": 1764342780942.5833,
+          "text": "Learn asymptotic analysis",
+          "completed": false
+        },
+        {
+          "id": 1764342780942.7817,
+          "text": "Practice step counting and time complexity analysis",
+          "completed": false
+        }
+      ]
     },
     {
-      "id": 1764336353161.9255,
-      "text": "Introduction to Problem Solving Approach - Space and Time Complexity Analysis",
-      "completed": false
+      "id": 1764342780942.737,
+      "title": "Sequential Lists and Linked Lists",
+      "color": "#3b82f6",
+      "items": [
+        {
+          "id": 1764342780942.4766,
+          "text": "Study single-dimensional arrays and sparse matrices",
+          "completed": false
+        },
+        {
+          "id": 1764342780942.336,
+          "text": "Implement algorithm to store sparse matrices",
+          "completed": false
+        },
+        {
+          "id": 1764342780942.8718,
+          "text": "Understand singly linked lists, list traversal algorithms, stacks, queues",
+          "completed": false
+        },
+        {
+          "id": 1764342780942.1145,
+          "text": "Implement array-based stack and queue",
+          "completed": false
+        },
+        {
+          "id": 1764342780942.9937,
+          "text": "Implement linked list-based stack and queue",
+          "completed": false
+        }
+      ]
     },
     {
-      "id": 1764336353161.6743,
-      "text": "Introduction to Problem Solving Approach - Asymptotic Analysis",
-      "completed": false
+      "id": 1764342780942.026,
+      "title": "Searching and Sorting",
+      "color": "#3b82f6",
+      "items": [
+        {
+          "id": 1764342780942.6199,
+          "text": "Learn linear search, binary search, comparison of linear and binary search",
+          "completed": false
+        },
+        {
+          "id": 1764342780942.2524,
+          "text": "Understand constant time search using hashing",
+          "completed": false
+        },
+        {
+          "id": 1764342780942.1936,
+          "text": "Study hash functions, collision resolution techniques (linear probing and chaining)",
+          "completed": false
+        },
+        {
+          "id": 1764342780942.2139,
+          "text": "Learn sorting algorithms (bubble sort, selection sort, insertion sort, merge sort, quick sort, radix sort, shell sort, bucket sort)",
+          "completed": false
+        }
+      ]
     },
     {
-      "id": 1764336353161.4294,
-      "text": "Introduction to Problem Solving Approach - Step Counting",
-      "completed": false
+      "id": 1764342780942.9204,
+      "title": "Trees",
+      "color": "#3b82f6",
+      "items": [
+        {
+          "id": 1764342780942.7954,
+          "text": "Understand basic terminology of trees",
+          "completed": false
+        },
+        {
+          "id": 1764342780942.394,
+          "text": "Study tree traversals (inorder, preorder, postorder)",
+          "completed": false
+        },
+        {
+          "id": 1764342780942.6401,
+          "text": "Learn expression trees and notation",
+          "completed": false
+        },
+        {
+          "id": 1764342780942.3555,
+          "text": "Implement search, insertion, and deletion operations in binary search tree",
+          "completed": false
+        },
+        {
+          "id": 1764342780942.582,
+          "text": "Understand balanced BST and AVL tree",
+          "completed": false
+        }
+      ]
     },
     {
-      "id": 1764336353161.0781,
-      "text": "Sequential Lists and Linked Lists - Arrays (Single and Multi-Dimensional)",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.252,
-      "text": "Sequential Lists and Linked Lists - Sparse Matrix Algorithm",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.6082,
-      "text": "Sequential Lists and Linked Lists - Singly Linked List Implementation",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.4595,
-      "text": "Sequential Lists and Linked Lists - Doubly Linked List Implementation",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.6162,
-      "text": "Sequential Lists and Linked Lists - Circular Linked List Implementation",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.0955,
-      "text": "Sequential Lists and Linked Lists - Stack Algorithm (Array Implementation)",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.4775,
-      "text": "Sequential Lists and Linked Lists - Stack Algorithm (Linked List Implementation)",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.3953,
-      "text": "Sequential Lists and Linked Lists - Queue Algorithm (Array Implementation)",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.0186,
-      "text": "Sequential Lists and Linked Lists - Queue Algorithm (Linked List Implementation)",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.5337,
-      "text": "Sequential Lists and Linked Lists - Circular Queue Implementation",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.7466,
-      "text": "Searching and Sorting - Linear Search Analysis",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.6555,
-      "text": "Searching and Sorting - Binary Search Analysis",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.158,
-      "text": "Searching and Sorting - Constant Time Search using Hashing",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.8018,
-      "text": "Searching and Sorting - Hash Functions",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.3286,
-      "text": "Searching and Sorting - Collision Resolution Techniques (Linear Probing)",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.7656,
-      "text": "Searching and Sorting - Collision Resolution Techniques (Chaining)",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.652,
-      "text": "Sorting Algorithms - Bubble Sort Implementation",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.7869,
-      "text": "Sorting Algorithms - Selection Sort Implementation",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.5823,
-      "text": "Sorting Algorithms - Insertion Sort Implementation",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.562,
-      "text": "Sorting Algorithms - Merge Sort Implementation",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.3308,
-      "text": "Sorting Algorithms - Quick Sort Implementation",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.5894,
-      "text": "Sorting Algorithms - Radix Sort Implementation",
-      "completed": false
-    },
-    {
-      "id": 1764336353161.5935,
-      "text": "Sorting Algorithms - Shell Sort Implementation",
-      "completed": false
-    },
-    {
-      "id": 1764336353162.8528,
-      "text": "Sorting Algorithms - Bucket Sort Implementation",
-      "completed": false
-    },
-    {
-      "id": 1764336353162.5784,
-      "text": "Priority Queues - Binary Heap Operations",
-      "completed": false
-    },
-    {
-      "id": 1764336353162.0552,
-      "text": "Priority Queues - Heapsort Algorithm",
-      "completed": false
-    },
-    {
-      "id": 1764336353162.3174,
-      "text": "Trees - Basic Terminology Review",
-      "completed": false
-    },
-    {
-      "id": 1764336353162.0127,
-      "text": "Trees - Tree Traversals (Pre-Order, In-Order, Post-Order)",
-      "completed": false
-    },
-    {
-      "id": 1764336353162.911,
-      "text": "Trees - Expression Trees and Notations",
-      "completed": false
-    },
-    {
-      "id": 1764336353162.1416,
-      "text": "Trees - Binary Search Tree Operations",
-      "completed": false
-    },
-    {
-      "id": 1764336353162.155,
-      "text": "Trees - Balanced BST Operations",
-      "completed": false
-    },
-    {
-      "id": 1764336353162.4414,
-      "text": "Trees - AVL Tree Operations",
-      "completed": false
-    },
-    {
-      "id": 1764336353162.512,
-      "text": "Graphs - Graph Theory Terminology Review",
-      "completed": false
-    },
-    {
-      "id": 1764336353162.9348,
-      "text": "Graphs - Graph Representation and Types",
-      "completed": false
-    },
-    {
-      "id": 1764336353162.9248,
-      "text": "Graphs - Breadth-First Search Algorithm",
-      "completed": false
-    },
-    {
-      "id": 1764336353162.273,
-      "text": "Graphs - Depth-First Search Algorithm",
-      "completed": false
-    },
-    {
-      "id": 1764336353162.77,
-      "text": "Graphs - Connected Components in BFS",
-      "completed": false
-    },
-    {
-      "id": 1764336353162.157,
-      "text": "Graphs - Strongly Connected Components in DFS",
-      "completed": false
+      "id": 1764342780942.305,
+      "title": "Graphs",
+      "color": "#3b82f6",
+      "items": [
+        {
+          "id": 1764342780942.388,
+          "text": "Study graph theory terminology and representation",
+          "completed": false
+        },
+        {
+          "id": 1764342780942.192,
+          "text": "Understand graph traversal algorithms (BFS, DFS)",
+          "completed": false
+        },
+        {
+          "id": 1764342780942.6025,
+          "text": "Learn Breadth-First Search and depth-first search for connected components",
+          "completed": false
+        },
+        {
+          "id": 1764342780942.169,
+          "text": "Implement Depth-First Search and strongly connected components",
+          "completed": false
+        }
+      ]
     }
   ],
   "study_sessions": []

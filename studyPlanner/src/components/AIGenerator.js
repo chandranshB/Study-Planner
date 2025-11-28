@@ -19,22 +19,22 @@ export default function AIGenerator({
     return (
         <div className="max-w-3xl mx-auto space-y-8">
             <div className="text-center space-y-2">
-                <div className="inline-flex items-center justify-center p-3 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-2xl mb-4">
-                    <Sparkles className="w-8 h-8 text-primary-600" />
+                <div className="inline-flex items-center justify-center p-3 bg-gradient-to-br from-primary-100 to-secondary-100 dark:from-primary-900/30 dark:to-secondary-900/30 rounded-2xl mb-4">
+                    <Sparkles className="w-8 h-8 text-primary-600 dark:text-primary-400" />
                 </div>
-                <h2 className="text-3xl font-bold text-slate-900">AI Study Assistant</h2>
-                <p className="text-slate-500">Generate a personalized study plan from your syllabus</p>
+                <h2 className="text-3xl font-bold text-slate-900 dark:text-white">AI Study Assistant</h2>
+                <p className="text-slate-500 dark:text-slate-400">Generate a personalized study plan from your syllabus</p>
             </div>
 
-            <div className="glass-card p-8 rounded-3xl space-y-8">
+            <div className="glass-card p-8 rounded-3xl space-y-8 dark:bg-slate-800/50 dark:border-slate-700">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <label className="block text-sm font-semibold text-slate-700">Ollama Model</label>
+                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Ollama Model</label>
                         <div className="relative">
                             <select
                                 value={selectedModel}
                                 onChange={(e) => setSelectedModel(e.target.value)}
-                                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl appearance-none focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                                className="w-full p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl appearance-none focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all text-slate-900 dark:text-white"
                             >
                                 {ollamaModels.length === 0 && <option>Loading models...</option>}
                                 {ollamaModels.map(model => (
@@ -42,43 +42,78 @@ export default function AIGenerator({
                                 ))}
                             </select>
                             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                                <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                <svg className="w-4 h-4 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                             </div>
                         </div>
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-semibold text-slate-700">Course Name</label>
+                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Course Name</label>
                         <input
                             type="text"
                             value={course}
                             onChange={(e) => setCourse(e.target.value)}
                             placeholder="e.g., Data Structures"
-                            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                            className="w-full p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
                         />
                     </div>
                 </div>
 
-                <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-slate-700">Year / Semester</label>
-                    <input
-                        type="text"
-                        value={year}
-                        onChange={(e) => setYear(e.target.value)}
-                        placeholder="e.g., Year 2, Semester 1"
-                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                    />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Year</label>
+                        <div className="relative">
+                            <select
+                                value={year.split(', ')[0] || ''}
+                                onChange={(e) => {
+                                    const currentSem = year.split(', ')[1] || '';
+                                    setYear(`${e.target.value}${currentSem ? ', ' + currentSem : ''}`);
+                                }}
+                                className="w-full p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl appearance-none focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all text-slate-900 dark:text-white"
+                            >
+                                <option value="">Select Year</option>
+                                {[1, 2, 3, 4].map(y => (
+                                    <option key={y} value={`Year ${y}`}>Year {y}</option>
+                                ))}
+                            </select>
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <svg className="w-4 h-4 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Semester</label>
+                        <div className="relative">
+                            <select
+                                value={year.split(', ')[1] || ''}
+                                onChange={(e) => {
+                                    const currentYear = year.split(', ')[0] || '';
+                                    setYear(`${currentYear}${currentYear ? ', ' : ''}${e.target.value}`);
+                                }}
+                                className="w-full p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl appearance-none focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all text-slate-900 dark:text-white"
+                            >
+                                <option value="">Select Semester</option>
+                                {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                                    <option key={s} value={`Semester ${s}`}>Semester {s}</option>
+                                ))}
+                            </select>
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <svg className="w-4 h-4 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="space-y-4">
-                    <label className="block text-sm font-semibold text-slate-700">Syllabus Content</label>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Syllabus Content</label>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-300 rounded-xl hover:bg-slate-50 cursor-pointer transition-all group">
-                            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                <Upload className="w-6 h-6 text-slate-400 group-hover:text-primary-600" />
+                        <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-all group">
+                            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <Upload className="w-6 h-6 text-slate-400 dark:text-slate-500 group-hover:text-primary-600 dark:group-hover:text-primary-400" />
                             </div>
-                            <span className="text-sm font-medium text-slate-600">Upload PDF Syllabus</span>
+                            <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Upload PDF Syllabus</span>
                             <input
                                 type="file"
                                 accept=".pdf"
@@ -92,9 +127,9 @@ export default function AIGenerator({
                                 value={syllabus}
                                 onChange={(e) => setSyllabus(e.target.value)}
                                 placeholder="Or paste your syllabus text here..."
-                                className="w-full h-full min-h-[120px] p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all resize-none"
+                                className="w-full h-full min-h-[120px] p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all resize-none text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
                             />
-                            <FileText className="absolute right-4 top-4 w-5 h-5 text-slate-400" />
+                            <FileText className="absolute right-4 top-4 w-5 h-5 text-slate-400 dark:text-slate-500" />
                         </div>
                     </div>
                 </div>
