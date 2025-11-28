@@ -2,9 +2,15 @@ import React from 'react';
 import { Calendar, CheckCircle2, Clock, TrendingUp, Activity, Play, ArrowRight, AlertCircle, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useStudyContext } from '../context/StudyContext';
+import { useNavigate } from 'react-router-dom';
 
-export default function Dashboard({ onStartFocus, onAddExam, onAddTask }) {
-    const { exams, checklist, studySessions } = useStudyContext();
+export default function Dashboard({ onAddExam }) {
+    const { exams, checklist, studySessions, addItem, addTopic } = useStudyContext();
+    const [quickTaskText, setQuickTaskText] = React.useState('');
+    const navigate = useNavigate();
+
+    const onStartFocus = () => navigate('/pomodoro');
+    const onAddTask = () => navigate('/checklist');
 
     // Calculate Stats
     const totalStudyMinutes = studySessions.reduce((acc, session) => acc + (session.duration || 0), 0);
@@ -19,6 +25,14 @@ export default function Dashboard({ onStartFocus, onAddExam, onAddTask }) {
         .sort((a, b) => new Date(a.date) - new Date(b.date));
     const nextExam = upcomingExams[0];
 
+    // Today's Focus Logic
+    const today = new Date().toDateString();
+    const urgentExams = upcomingExams.filter(e => {
+        const diffTime = new Date(e.date) - new Date();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays <= 3; // Exams in next 3 days
+    });
+
     // Greeting
     const hour = new Date().getHours();
     const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
@@ -28,6 +42,26 @@ export default function Dashboard({ onStartFocus, onAddExam, onAddTask }) {
         if (days === 0) return 'Today';
         if (days === 1) return 'Tomorrow';
         return `in ${days} days`;
+    };
+
+    const handleQuickAdd = (e) => {
+        e.preventDefault();
+        if (!quickTaskText.trim()) return;
+
+        // Find a default topic or create one
+        let targetTopic = checklist.find(t => t.title === "General" || t.title === "Inbox") || checklist[0];
+
+        if (!targetTopic) {
+            // If absolutely no topics, we might need to create one (if addTopic is available and we want to handle that complexity here)
+            // For now, let's assume at least one topic exists or we can't add.
+            // Ideally, we should call addTopic({ title: "Inbox", ... }) then add item.
+            // But to keep it simple and safe:
+            alert("Please create a Topic in Checklist first!");
+            return;
+        }
+
+        addItem(targetTopic.id, quickTaskText);
+        setQuickTaskText('');
     };
 
     const stats = [
@@ -58,14 +92,14 @@ export default function Dashboard({ onStartFocus, onAddExam, onAddTask }) {
     ];
 
     return (
-        <div className="space-y-6 md:space-y-8 pb-20 md:pb-0">
+        <div className="space-y-8 pb-24 md:pb-8">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
                 <div>
-                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">{greeting}! 👋</h2>
-                    <p className="text-slate-600 dark:text-slate-400 mt-1 text-base md:text-lg font-medium">Ready to be productive today?</p>
+                    <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">{greeting}! 👋</h2>
+                    <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">Ready to crush your goals today?</p>
                 </div>
-                <div className="hidden md:flex items-center space-x-2 text-sm font-medium bg-white dark:bg-slate-800 px-4 py-2 rounded-full shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
+                <div className="hidden md:flex items-center space-x-2 text-sm font-semibold bg-white dark:bg-slate-800 px-4 py-2 rounded-full shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
                     <Calendar className="w-4 h-4" />
                     <span>{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</span>
                 </div>
@@ -86,172 +120,196 @@ export default function Dashboard({ onStartFocus, onAddExam, onAddTask }) {
                                 <stat.icon className={`w-6 h-6 ${stat.color}`} />
                             </div>
                             <div>
-                                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{stat.label}</p>
-                                <h3 className="text-2xl font-bold text-slate-900 dark:text-white leading-tight">{stat.value}</h3>
-                                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">{stat.subtext}</p>
+                                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{stat.label}</p>
+                                <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight mt-1">{stat.value}</h3>
+                                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">{stat.subtext}</p>
                             </div>
                         </div>
                     </motion.div>
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Content Area - 2/3 width */}
-                <div className="lg:col-span-2 space-y-6 md:space-y-8">
-                    {/* Quick Actions */}
-                    <div className="glass-card p-5 md:p-6 rounded-2xl dark:bg-slate-800/50 dark:border-slate-700">
-                        <h3 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white mb-4 md:mb-6 flex items-center">
-                            <Activity className="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400" />
-                            Quick Actions
-                        </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+                <div className="lg:col-span-2 space-y-8">
+
+                    {/* Today's Focus Section */}
+                    <div className="glass-card p-6 rounded-2xl dark:bg-slate-800/50 dark:border-slate-700 border-l-4 border-l-primary-500">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center">
+                                <Activity className="w-5 h-5 mr-2 text-primary-500" />
+                                Today's Focus
+                            </h3>
+                            <span className="text-xs font-bold px-2 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-lg uppercase tracking-wider">
+                                Priority
+                            </span>
+                        </div>
+
+                        <div className="space-y-4">
+                            {/* Urgent Exams */}
+                            {urgentExams.length > 0 && (
+                                <div className="space-y-2">
+                                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Upcoming Exams</h4>
+                                    {urgentExams.map(exam => (
+                                        <div key={exam.id} className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-100 dark:border-red-900/20">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-1.5 h-8 rounded-full bg-red-500"></div>
+                                                <div>
+                                                    <p className="font-bold text-slate-900 dark:text-white">{exam.name}</p>
+                                                    <p className="text-xs text-red-600 dark:text-red-400 font-medium">{getDaysUntil(exam.date)}</p>
+                                                </div>
+                                            </div>
+                                            <button onClick={onStartFocus} className="text-xs font-bold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-lg shadow-sm hover:bg-slate-50 transition-colors">
+                                                Study Now
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Quick Add Task */}
+                            <div>
+                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Quick Add Task</h4>
+                                <form onSubmit={handleQuickAdd} className="relative">
+                                    <input
+                                        type="text"
+                                        value={quickTaskText}
+                                        onChange={(e) => setQuickTaskText(e.target.value)}
+                                        placeholder="What needs to be done? Press Enter..."
+                                        className="w-full pl-4 pr-12 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all font-medium text-slate-700 dark:text-slate-200 placeholder:text-slate-400"
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={!quickTaskText.trim()}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:hover:bg-primary-500 transition-colors"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Quick Actions Grid */}
+                    <div>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Quick Actions</h3>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                             <button
                                 onClick={onStartFocus}
-                                className="group p-4 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-xl shadow-lg shadow-primary-600/20 hover:shadow-primary-600/30 transition-all transform active:scale-[0.98] text-left relative overflow-hidden"
+                                className="group p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-primary-500 dark:hover:border-primary-500 hover:shadow-md transition-all text-left flex flex-col justify-between h-32"
                             >
-                                <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
-                                <div className="bg-white/20 w-10 h-10 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                    <Play className="w-6 h-6 fill-current" />
+                                <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 group-hover:scale-110 transition-transform">
+                                    <Play className="w-5 h-5 fill-current" />
                                 </div>
-                                <div className="font-bold text-lg">Start Focus</div>
-                                <div className="text-primary-100 text-sm font-medium">Launch Pomodoro</div>
+                                <div>
+                                    <span className="block font-bold text-slate-900 dark:text-white">Focus</span>
+                                    <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Start Timer</span>
+                                </div>
                             </button>
 
                             <button
                                 onClick={onAddTask}
-                                className="group p-4 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl hover:border-primary-500 dark:hover:border-primary-500 hover:shadow-md transition-all active:scale-[0.98] text-left"
+                                className="group p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-green-500 dark:hover:border-green-500 hover:shadow-md transition-all text-left flex flex-col justify-between h-32"
                             >
-                                <div className="bg-slate-100 dark:bg-slate-600 w-10 h-10 rounded-lg flex items-center justify-center mb-3 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 transition-colors">
-                                    <CheckCircle2 className="w-6 h-6 text-slate-600 dark:text-slate-300 group-hover:text-primary-600 dark:group-hover:text-primary-400" />
+                                <div className="w-10 h-10 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 dark:text-green-400 group-hover:scale-110 transition-transform">
+                                    <CheckCircle2 className="w-5 h-5" />
                                 </div>
-                                <div className="font-bold text-slate-900 dark:text-white">Manage Tasks</div>
-                                <div className="text-slate-500 dark:text-slate-400 text-sm font-medium">Update checklist</div>
+                                <div>
+                                    <span className="block font-bold text-slate-900 dark:text-white">Tasks</span>
+                                    <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Manage List</span>
+                                </div>
                             </button>
 
                             <button
                                 onClick={onAddExam}
-                                className="group p-4 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl hover:border-primary-500 dark:hover:border-primary-500 hover:shadow-md transition-all active:scale-[0.98] text-left"
+                                className="group p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-purple-500 dark:hover:border-purple-500 hover:shadow-md transition-all text-left flex flex-col justify-between h-32"
                             >
-                                <div className="bg-slate-100 dark:bg-slate-600 w-10 h-10 rounded-lg flex items-center justify-center mb-3 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 transition-colors">
-                                    <Calendar className="w-6 h-6 text-slate-600 dark:text-slate-300 group-hover:text-primary-600 dark:group-hover:text-primary-400" />
+                                <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform">
+                                    <Calendar className="w-5 h-5" />
                                 </div>
-                                <div className="font-bold text-slate-900 dark:text-white">Add Exam</div>
-                                <div className="text-slate-500 dark:text-slate-400 text-sm font-medium">Schedule new test</div>
+                                <div>
+                                    <span className="block font-bold text-slate-900 dark:text-white">Exams</span>
+                                    <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Add New</span>
+                                </div>
+                            </button>
+
+                            <button
+                                className="group p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-amber-500 dark:hover:border-amber-500 hover:shadow-md transition-all text-left flex flex-col justify-between h-32 opacity-60 cursor-not-allowed"
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                                    <TrendingUp className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <span className="block font-bold text-slate-900 dark:text-white">Stats</span>
+                                    <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Coming Soon</span>
+                                </div>
                             </button>
                         </div>
-                    </div>
-
-                    {/* Recent Activity */}
-                    <div className="glass-card p-5 md:p-6 rounded-2xl dark:bg-slate-800/50 dark:border-slate-700">
-                        <div className="flex items-center justify-between mb-4 md:mb-6">
-                            <h3 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white">Recent Sessions</h3>
-                            <button onClick={onStartFocus} className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 flex items-center p-2 -mr-2 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
-                                View all <ArrowRight className="w-4 h-4 ml-1" />
-                            </button>
-                        </div>
-
-                        {studySessions.length === 0 ? (
-                            <div className="text-center py-8 md:py-12 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-600">
-                                <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <Clock className="w-6 h-6 text-slate-400" />
-                                </div>
-                                <p className="text-slate-500 dark:text-slate-400 font-medium">No sessions yet. Start focusing!</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {studySessions.slice(-3).reverse().map(session => (
-                                    <div key={session.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-100 dark:border-slate-700/50 hover:border-primary-200 dark:hover:border-primary-700/50 transition-colors">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center text-slate-400 shadow-sm">
-                                                <CheckCircle2 className="w-5 h-5" />
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold text-slate-900 dark:text-white line-clamp-1">{session.covered || 'Focus Session'}</p>
-                                                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{new Date(session.date).toLocaleDateString()}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center text-sm font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 px-3 py-1.5 rounded-lg shadow-sm border border-slate-100 dark:border-slate-600">
-                                            <Clock className="w-3.5 h-3.5 mr-1.5 text-primary-500" />
-                                            {session.duration}m
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
                     </div>
                 </div>
 
                 {/* Sidebar Area - 1/3 width */}
-                <div className="space-y-6">
+                <div className="space-y-8">
                     {/* Progress Card */}
-                    <div className="glass-card p-6 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white border-none relative overflow-hidden shadow-xl">
+                    <div className="glass-card p-6 rounded-2xl bg-gradient-to-br from-slate-900 to-primary-900 text-white border-none relative overflow-hidden shadow-2xl">
                         <div className="absolute top-0 right-0 w-40 h-40 bg-primary-500/20 rounded-full blur-3xl -mr-10 -mt-10"></div>
                         <div className="absolute bottom-0 left-0 w-32 h-32 bg-secondary-500/20 rounded-full blur-3xl -ml-10 -mb-10"></div>
 
                         <div className="relative z-10">
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-lg font-bold">Overall Progress</h3>
-                                <TrendingUp className="w-5 h-5 text-primary-400" />
+                                <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                                    <TrendingUp className="w-5 h-5 text-primary-300" />
+                                </div>
                             </div>
 
-                            <div className="flex items-end justify-between mb-2">
-                                <span className="text-5xl font-bold tracking-tight">{completionRate}%</span>
-                                <span className="text-slate-400 text-sm font-medium mb-1.5">Done</span>
+                            <div className="flex items-end justify-between mb-3">
+                                <span className="text-5xl font-black tracking-tighter">{completionRate}%</span>
+                                <span className="text-slate-300 text-sm font-medium mb-1.5">Completed</span>
                             </div>
 
-                            <div className="w-full bg-slate-700/50 rounded-full h-3 mb-4 backdrop-blur-sm">
-                                <div
-                                    className="bg-gradient-to-r from-primary-500 to-secondary-500 h-3 rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(59,130,246,0.5)]"
-                                    style={{ width: `${completionRate}%` }}
-                                ></div>
+                            <div className="w-full bg-slate-700/50 rounded-full h-3 mb-4 backdrop-blur-sm overflow-hidden">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${completionRate}%` }}
+                                    transition={{ duration: 1, ease: "easeOut" }}
+                                    className="bg-gradient-to-r from-primary-500 to-secondary-500 h-3 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.6)]"
+                                ></motion.div>
                             </div>
 
-                            <p className="text-sm text-slate-300 font-medium">
-                                {completedTasks} of {totalTasks} tasks completed.
-                                {completionRate >= 100 ? " Amazing job! 🎉" : " Keep it up!"}
+                            <p className="text-sm text-slate-300 font-medium leading-relaxed">
+                                You've completed <span className="text-white font-bold">{completedTasks}</span> out of <span className="text-white font-bold">{totalTasks}</span> tasks.
+                                {completionRate >= 100 ? " Incredible work! 🎉" : " Keep pushing!"}
                             </p>
                         </div>
                     </div>
 
-                    {/* Upcoming Exams List */}
-                    <div className="glass-card p-5 md:p-6 rounded-2xl dark:bg-slate-800/50 dark:border-slate-700">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-bold text-slate-900 dark:text-white">Upcoming Exams</h3>
-                            <button onClick={onAddExam} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-primary-600">
-                                <Plus className="w-4 h-4" />
-                            </button>
-                        </div>
-
-                        {upcomingExams.length === 0 ? (
-                            <div className="text-center py-6">
-                                <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-green-50 dark:bg-green-900/20 mb-2">
-                                    <CheckCircle2 className="w-5 h-5 text-green-500" />
-                                </div>
-                                <p className="text-sm font-medium text-slate-600 dark:text-slate-300">All caught up!</p>
-                                <p className="text-xs text-slate-400">No upcoming exams scheduled.</p>
+                    {/* Recent Sessions */}
+                    <div className="glass-card p-6 rounded-2xl dark:bg-slate-800/50 dark:border-slate-700">
+                        <h3 className="font-bold text-slate-900 dark:text-white mb-4">Recent Sessions</h3>
+                        {studySessions.length === 0 ? (
+                            <div className="text-center py-8 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-600">
+                                <Clock className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">No sessions yet</p>
                             </div>
                         ) : (
                             <div className="space-y-3">
-                                {upcomingExams.slice(0, 3).map(exam => (
-                                    <div key={exam.id} className="group flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
-                                        <div className="w-1.5 h-10 rounded-full flex-shrink-0" style={{ backgroundColor: exam.color }}></div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{exam.name}</p>
-                                            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                                <span>{new Date(exam.date).toLocaleDateString()}</span>
-                                                <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-                                                <span className={getDaysUntil(exam.date) === 'Today' ? 'text-red-500 font-bold' : ''}>
-                                                    {getDaysUntil(exam.date)}
-                                                </span>
+                                {studySessions.slice(-3).reverse().map(session => (
+                                    <div key={session.id} className="flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-colors group">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400">
+                                                <CheckCircle2 className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1">{session.covered || 'Focus Session'}</p>
+                                                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{new Date(session.date).toLocaleDateString()}</p>
                                             </div>
                                         </div>
+                                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-md">
+                                            {session.duration}m
+                                        </span>
                                     </div>
                                 ))}
-                                {upcomingExams.length > 3 && (
-                                    <button onClick={onAddExam} className="w-full py-2 text-xs font-medium text-slate-500 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400 transition-colors">
-                                        +{upcomingExams.length - 3} more exams
-                                    </button>
-                                )}
                             </div>
                         )}
                     </div>

@@ -174,6 +174,84 @@ export const StudyProvider = ({ children }) => {
         saveData('checklist', newChecklist);
     };
 
+    // --- Data Import/Export ---
+    const { exportData: compressData, importData: decompressData } = require('../utils/dataHandler');
+
+    const handleExport = async () => {
+        const data = {
+            exams,
+            checklist,
+            studySessions,
+            version: 1,
+            timestamp: new Date().toISOString()
+        };
+        try {
+            const blob = await compressData(data);
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `study-data-${new Date().toISOString().split('T')[0]}.chandu`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error('Export failed', error);
+            alert('Failed to export data');
+        }
+    };
+
+    const handleImport = async (file, mode = 'merge') => {
+        try {
+            const data = await decompressData(file);
+
+            if (mode === 'replace') {
+                setExams(data.exams || []);
+                setChecklist(data.checklist || []);
+                setStudySessions(data.studySessions || []);
+                saveData('exams', data.exams || []);
+                saveData('checklist', data.checklist || []);
+                saveData('study_sessions', data.studySessions || []);
+            } else {
+                // Merge Logic
+                // Exams: Add if ID doesn't exist
+                const newExams = [...exams];
+                (data.exams || []).forEach(e => {
+                    if (!newExams.find(curr => curr.id === e.id)) {
+                        newExams.push(e);
+                    }
+                });
+                setExams(newExams);
+                saveData('exams', newExams);
+
+                // Checklist: Add if ID doesn't exist (Simple merge)
+                const newChecklist = [...checklist];
+                (data.checklist || []).forEach(t => {
+                    if (!newChecklist.find(curr => curr.id === t.id)) {
+                        newChecklist.push(t);
+                    }
+                });
+                setChecklist(newChecklist);
+                saveData('checklist', newChecklist);
+
+                // Sessions: Add if ID doesn't exist
+                const newSessions = [...studySessions];
+                (data.studySessions || []).forEach(s => {
+                    if (!newSessions.find(curr => curr.id === s.id)) {
+                        newSessions.push(s);
+                    }
+                });
+                setStudySessions(newSessions);
+                saveData('study_sessions', newSessions);
+            }
+            return true;
+        } catch (error) {
+            console.error('Import failed', error);
+            alert('Failed to import data. Invalid file format.');
+            return false;
+        }
+    };
+
     return (
         <StudyContext.Provider value={{
             exams,
@@ -193,6 +271,8 @@ export const StudyProvider = ({ children }) => {
             deleteItem,
             addSession,
             updateChecklist,
+            handleExport,
+            handleImport,
             API_URL
         }}>
             {children}

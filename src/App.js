@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import Pomodoro from './components/Pomodoro';
@@ -11,7 +12,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { StudyProvider, useStudyContext } from './context/StudyContext';
 
 function StudyFlowContent() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const navigate = useNavigate();
   const {
     checklist,
     exams,
@@ -97,59 +98,57 @@ function StudyFlowContent() {
   const [initialSubjectFilter, setInitialSubjectFilter] = useState('All');
 
   const handleExamClick = (exam) => {
-    setActiveTab('checklist');
+    // Navigate to checklist with filter
     if (exam.subject) {
       setInitialSubjectFilter(exam.subject);
     } else {
       setInitialSubjectFilter('All');
     }
+    navigate('/checklist');
   };
 
   return (
-    <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
-      {activeTab === 'dashboard' && (
-        <Dashboard
-          onStartFocus={() => setActiveTab('pomodoro')}
-          onAddExam={() => setIsExamModalOpen(true)}
-          onAddTask={() => setActiveTab('checklist')}
-        />
-      )}
+    <Layout>
+      <Routes>
+        <Route path="/" element={
+          <Dashboard
+            onAddExam={() => setIsExamModalOpen(true)}
+          />
+        } />
 
-      {activeTab === 'pomodoro' && (
-        <Pomodoro />
-      )}
+        <Route path="/pomodoro" element={<Pomodoro />} />
 
-      {activeTab === 'exams' && (
-        <Exams
-          addExam={() => setIsExamModalOpen(true)}
-          onExamClick={handleExamClick}
-        />
-      )}
+        <Route path="/exams" element={
+          <Exams
+            addExam={() => setIsExamModalOpen(true)}
+            onExamClick={(exam) => {
+              handleExamClick(exam);
+              // We need to navigate programmatically here if we want to switch tabs
+              // But we can't use useNavigate here because we are inside the component that defines Routes?
+              // Actually StudyFlowContent is inside BrowserRouter (in index.js), so we can use useNavigate hook!
+            }}
+          />
+        } />
 
-      {activeTab === 'checklist' && (
-        <Checklist
-          onAddTopic={() => {
-            setEditingTopic(null);
-            setNewTopicData({ title: '', color: '#3b82f6', subject: '' });
-            setIsTopicModalOpen(true);
-          }}
-          onAddItem={openAddItemModal}
-          onEditTopic={openEditTopicModal}
-          onEditItem={openEditItemModal}
-          initialFilter={initialSubjectFilter}
-          setInitialFilter={setInitialSubjectFilter}
-        />
-      )}
+        <Route path="/checklist" element={
+          <Checklist
+            onAddTopic={() => {
+              setEditingTopic(null);
+              setNewTopicData({ title: '', color: '#3b82f6', subject: '' });
+              setIsTopicModalOpen(true);
+            }}
+            onAddItem={openAddItemModal}
+            onEditTopic={openEditTopicModal}
+            onEditItem={openEditItemModal}
+            initialFilter={initialSubjectFilter}
+            setInitialFilter={setInitialSubjectFilter}
+          />
+        } />
 
-      {activeTab === 'ai-generator' && (
-        <AIGenerator
-          setActiveTab={setActiveTab}
-        />
-      )}
+        <Route path="/ai-generator" element={<AIGenerator />} />
 
-      {activeTab === 'settings' && (
-        <Settings />
-      )}
+        <Route path="/settings" element={<Settings />} />
+      </Routes>
 
       {/* Exam Modal */}
       <Modal

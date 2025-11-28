@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Palette, Trash2, AlertTriangle, Moon, Sun, Type, Layers } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useStudyContext } from '../context/StudyContext';
 
 export default function Settings() {
     const {
@@ -11,6 +12,8 @@ export default function Settings() {
         textureTheme, setTextureTheme,
         themes
     } = useTheme();
+
+    const { handleExport, handleImport } = useStudyContext();
 
     const clearData = () => {
         if (window.confirm('Are you sure you want to clear all data? This cannot be undone.')) {
@@ -72,8 +75,8 @@ export default function Settings() {
                                 key={t.id}
                                 onClick={() => setColorTheme(t.id)}
                                 className={`relative group p-4 rounded-xl border-2 transition-all duration-200 ${colorTheme === t.id
-                                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                                        : 'border-slate-200 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-700'
+                                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                                    : 'border-slate-200 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-700'
                                     }`}
                             >
                                 <div className="flex flex-col items-center space-y-3">
@@ -109,8 +112,8 @@ export default function Settings() {
                                     key={f.id}
                                     onClick={() => setFontTheme(f.id)}
                                     className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${fontTheme === f.id
-                                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                                            : 'border-slate-200 dark:border-slate-700 hover:border-primary-300 text-slate-600 dark:text-slate-400'
+                                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                                        : 'border-slate-200 dark:border-slate-700 hover:border-primary-300 text-slate-600 dark:text-slate-400'
                                         }`}
                                 >
                                     <span className={f.font}>{f.label}</span>
@@ -134,14 +137,66 @@ export default function Settings() {
                                     key={t.id}
                                     onClick={() => setTextureTheme(t.id)}
                                     className={`p-3 rounded-xl border text-sm font-medium transition-all ${textureTheme === t.id
-                                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                                            : 'border-slate-200 dark:border-slate-700 hover:border-primary-300 text-slate-600 dark:text-slate-400'
+                                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                                        : 'border-slate-200 dark:border-slate-700 hover:border-primary-300 text-slate-600 dark:text-slate-400'
                                         }`}
                                 >
                                     {t.label}
                                 </button>
                             ))}
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Data Management */}
+            <section className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
+                <div className="flex items-center space-x-3 mb-2">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                        <Layers className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Data Management</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Import or export your study data</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <button
+                        onClick={handleExport}
+                        className="flex items-center justify-center space-x-2 px-4 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-colors font-medium"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        <span>Export Data (.chandu)</span>
+                    </button>
+
+                    <div className="relative">
+                        <input
+                            type="file"
+                            accept=".chandu"
+                            onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (!file) return;
+
+                                if (window.confirm('Do you want to REPLACE all current data? Click Cancel to MERGE instead.')) {
+                                    handleImport(file, 'replace');
+                                } else {
+                                    handleImport(file, 'merge');
+                                }
+                                e.target.value = null; // Reset
+                            }}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <button
+                            className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-colors font-medium pointer-events-none"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                            </svg>
+                            <span>Import Data</span>
+                        </button>
                     </div>
                 </div>
             </section>
