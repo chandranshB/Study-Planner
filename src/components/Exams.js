@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Calendar as CalendarIcon, AlertCircle, ArrowUpDown, Filter } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useStudyContext } from '../context/StudyContext';
 
-export default function Exams({ exams, addExam, deleteExam }) {
+export default function Exams({ addExam, onExamClick }) {
+    const { exams, deleteExam } = useStudyContext();
     const [sortBy, setSortBy] = useState('date'); // 'date', 'name', 'urgency'
 
     const daysUntil = (dateStr) => {
@@ -72,7 +74,8 @@ export default function Exams({ exams, addExam, deleteExam }) {
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
                                 layout
-                                className="glass-card p-5 md:p-6 rounded-2xl group relative overflow-hidden dark:bg-slate-800/50 dark:border-slate-700 active:scale-[0.98] transition-transform duration-200"
+                                onClick={() => onExamClick && onExamClick(exam)}
+                                className="glass-card p-5 md:p-6 rounded-2xl group relative overflow-hidden dark:bg-slate-800/50 dark:border-slate-700 active:scale-[0.98] transition-transform duration-200 cursor-pointer hover:ring-2 hover:ring-primary-500/50"
                             >
                                 <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: exam.color || (isUrgent ? '#ef4444' : isWarning ? '#f59e0b' : '#10b981') }} />
 
@@ -84,6 +87,11 @@ export default function Exams({ exams, addExam, deleteExam }) {
                                         <div className="flex items-center text-slate-500 dark:text-slate-400 text-xs md:text-sm mt-1">
                                             <CalendarIcon className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                                             {new Date(exam.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                                            {exam.subject && (
+                                                <span className="ml-2 px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded-full text-xs">
+                                                    {exam.subject}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
                                     <button

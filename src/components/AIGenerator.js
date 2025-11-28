@@ -1,21 +1,74 @@
 import React, { useState } from 'react';
 import { Sparkles, Upload, FileText, Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useStudyContext } from '../context/StudyContext';
 
-export default function AIGenerator({
-    ollamaModels,
-    selectedModel,
-    setSelectedModel,
-    course,
-    setCourse,
-    year,
-    setYear,
-    syllabus,
-    setSyllabus,
-    generateChecklist,
-    isGenerating,
-    handleFileUpload
-}) {
+export default function AIGenerator({ setActiveTab }) {
+    const { ollamaModels, selectedModel, setSelectedModel, updateChecklist, checklist, exams, API_URL } = useStudyContext();
+    const [subject, setSubject] = useState('');
+    const [year, setYear] = useState('');
+    const [syllabus, setSyllabus] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    // Get unique subjects from exams for suggestions
+    const examSubjects = [...new Set(exams.map(e => e.subject).filter(Boolean))];
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+            const res = await fetch(`${API_URL}/api/upload-pdf`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            setSyllabus(data.text);
+        } catch (err) {
+            alert('Failed to process PDF');
+        }
+    };
+
+    const generateChecklist = async () => {
+        if (!syllabus || !subject || !selectedModel) {
+            alert('Please fill all fields and select a model');
+            return;
+        }
+        setIsGenerating(true);
+        try {
+            const res = await fetch(`${API_URL}/api/generate-checklist`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ syllabus, course: subject, year, model: selectedModel })
+            });
+            const data = await res.json();
+
+            const newTopics = data.checklist.map(topic => {
+                const items = Array.isArray(topic.items) ? topic.items : [];
+                return {
+                    id: Date.now() + Math.random(),
+                    title: topic.title || topic,
+                    color: '#3b82f6',
+                    subject: subject, // Use the subject name
+                    items: items.map(text => ({
+                        id: Date.now() + Math.random(),
+                        text: typeof text === 'string' ? text : text.text,
+                        completed: false
+                    }))
+                };
+            });
+
+            const newChecklist = [...checklist, ...newTopics];
+            updateChecklist(newChecklist);
+            setSyllabus('');
+            setActiveTab('checklist');
+        } catch (err) {
+            alert('Failed to generate checklist');
+            console.error(err);
+        }
+        setIsGenerating(false);
+    };
+
     return (
         <div className="max-w-3xl mx-auto space-y-8">
             <div className="text-center space-y-2">
@@ -48,14 +101,20 @@ export default function AIGenerator({
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Course Name</label>
+                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Subject</label>
                         <input
                             type="text"
-                            value={course}
-                            onChange={(e) => setCourse(e.target.value)}
-                            placeholder="e.g., Data Structures"
+                            list="course-subjects-list"
+                            value={subject}
+                            onChange={(e) => setSubject(e.target.value)}
+                            placeholder="Select or type new subject..."
                             className="w-full p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
                         />
+                        <datalist id="course-subjects-list">
+                            {examSubjects.map(s => (
+                                <option key={s} value={s} />
+                            ))}
+                        </datalist>
                     </div>
                 </div>
 

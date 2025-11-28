@@ -2,8 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, CheckCircle2, Settings, Coffee, Brain } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Modal from './Modal';
+import { useStudyContext } from '../context/StudyContext';
 
-export default function Pomodoro({ checklist, onSessionComplete }) {
+export default function Pomodoro() {
+    const { checklist, addSession } = useStudyContext();
+
     // Settings State
     const [settings, setSettings] = useState(() => {
         const saved = localStorage.getItem('study-flow-pomodoro-settings');
@@ -69,7 +72,7 @@ export default function Pomodoro({ checklist, onSessionComplete }) {
     };
 
     const handleComplete = () => {
-        onSessionComplete({
+        addSession({
             topics: selectedTopics,
             covered: topicsCovered,
             duration: settings.focus - minutes // Approximate duration
@@ -186,29 +189,43 @@ export default function Pomodoro({ checklist, onSessionComplete }) {
                             <CheckCircle2 className="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400" />
                             Select Topics
                         </h3>
-                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                        <div className="space-y-4 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
                             {checklist.filter(c => !c.completed).length === 0 ? (
                                 <p className="text-slate-500 dark:text-slate-400 text-sm italic">No pending tasks. Add some in the Checklist tab!</p>
                             ) : (
-                                checklist.filter(c => !c.completed).map(item => (
-                                    <label key={item.id} className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition-colors group">
-                                        <div className="relative flex items-center">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedTopics.includes(item.text)}
-                                                onChange={(e) => {
-                                                    if (e.target.checked) {
-                                                        setSelectedTopics([...selectedTopics, item.text]);
-                                                    } else {
-                                                        setSelectedTopics(selectedTopics.filter(t => t !== item.text));
-                                                    }
-                                                }}
-                                                className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 transition-all checked:border-primary-600 checked:bg-primary-600 hover:border-primary-500"
-                                            />
-                                            <CheckCircle2 className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 w-3.5 h-3.5" />
+                                Object.entries(checklist.reduce((acc, topic) => {
+                                    const subject = topic.subject || 'General';
+                                    if (!acc[subject]) acc[subject] = [];
+                                    acc[subject].push(topic);
+                                    return acc;
+                                }, {})).map(([subject, topics]) => (
+                                    <div key={subject}>
+                                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 sticky top-0 bg-white dark:bg-slate-800/95 backdrop-blur-sm py-1 z-10">
+                                            {subject}
+                                        </h4>
+                                        <div className="space-y-2">
+                                            {topics.map(item => (
+                                                <label key={item.id} className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition-colors group">
+                                                    <div className="relative flex items-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedTopics.includes(item.title)}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    setSelectedTopics([...selectedTopics, item.title]);
+                                                                } else {
+                                                                    setSelectedTopics(selectedTopics.filter(t => t !== item.title));
+                                                                }
+                                                            }}
+                                                            className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 transition-all checked:border-primary-600 checked:bg-primary-600 hover:border-primary-500"
+                                                        />
+                                                        <CheckCircle2 className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 w-3.5 h-3.5" />
+                                                    </div>
+                                                    <span className="text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">{item.title}</span>
+                                                </label>
+                                            ))}
                                         </div>
-                                        <span className="text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">{item.text}</span>
-                                    </label>
+                                    </div>
                                 ))
                             )}
                         </div>
