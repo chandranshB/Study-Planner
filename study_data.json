@@ -37,6 +37,447 @@
       "color": "#f59e0b"
     }
   ],
-  "checklist": [],
+  "checklist": [
+    {
+      "id": 1764350550487.725,
+      "title": "Introduction to Problem Solving Approach",
+      "color": "#3b82f6",
+      "subject": "Data Structures",
+      "items": [
+        {
+          "id": 1764350550487.376,
+          "text": "Learn the basic concepts of algorithmic solution and analysis of algorithms",
+          "completed": false
+        },
+        {
+          "id": 1764350550487.2783,
+          "text": "Understand space and time complexity, asymptotic analysis, step counting, and time complexity analysis",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350550487.7815,
+      "title": "Sequential Lists and Linked Lists",
+      "color": "#3b82f6",
+      "subject": "Data Structures",
+      "items": [
+        {
+          "id": 1764350550487.9211,
+          "text": "Study sequential lists (arrays) and learn to implement single and multi-dimensional arrays",
+          "completed": false
+        },
+        {
+          "id": 1764350550487.8672,
+          "text": "Learn to store sparse matrices and implement singly, doubly, and circular linked lists",
+          "completed": false
+        },
+        {
+          "id": 1764350550487.662,
+          "text": "Implement list traversal algorithms for all types of linked lists",
+          "completed": false
+        },
+        {
+          "id": 1764350550487.3203,
+          "text": "Understand array implementation of stacks and queues",
+          "completed": false
+        },
+        {
+          "id": 1764350550487.395,
+          "text": "Implement circular queue and dequeue",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350550487.6846,
+      "title": "Searching and Sorting",
+      "color": "#3b82f6",
+      "subject": "Data Structures",
+      "items": [
+        {
+          "id": 1764350550487.5303,
+          "text": "Learn linear search and binary search, including comparison of both methods",
+          "completed": false
+        },
+        {
+          "id": 1764350550487.0347,
+          "text": "Study constant time search using hashing, hash functions, and collision resolution techniques",
+          "completed": false
+        },
+        {
+          "id": 1764350550487.1619,
+          "text": "Understand bubble sort, selection sort, insertion sort, merge sort, quick sort, radix sort, shell sort, bucket sort",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350550487.5825,
+      "title": "Trees",
+      "color": "#3b82f6",
+      "subject": "Data Structures",
+      "items": [
+        {
+          "id": 1764350550487.886,
+          "text": "Learn basic tree terminology and understand post/pre/infix notation",
+          "completed": false
+        },
+        {
+          "id": 1764350550487.5413,
+          "text": "Study binary search trees (BSTs) including search, insertion, deletion operations",
+          "completed": false
+        },
+        {
+          "id": 1764350550487.412,
+          "text": "Understand balanced BSTs and AVL trees, including insertion and deletion in AVL tree",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350550487.5676,
+      "title": "Graphs",
+      "color": "#3b82f6",
+      "subject": "Data Structures",
+      "items": [
+        {
+          "id": 1764350550487.5547,
+          "text": "Learn graph theory terminology and understand graph representation",
+          "completed": false
+        },
+        {
+          "id": 1764350550487.1528,
+          "text": "Study graph traversal algorithms (BFS and DFS) and connected components",
+          "completed": false
+        },
+        {
+          "id": 1764350550487.922,
+          "text": "Understand applications of BFS and DFS",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350670014.6667,
+      "title": "OOPS Principles",
+      "color": "#3b82f6",
+      "subject": "C++",
+      "items": [
+        {
+          "id": 1764350670014.2402,
+          "text": "Study Abstraction concept",
+          "completed": false
+        },
+        {
+          "id": 1764350670014.7979,
+          "text": "Understand Encapsulation concepts",
+          "completed": false
+        },
+        {
+          "id": 1764350670014.4128,
+          "text": "Learn Inheritance principles",
+          "completed": false
+        },
+        {
+          "id": 1764350670014.8792,
+          "text": "Benefits of OOP over procedural programming",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350670014.9585,
+      "title": "Object and Class Modeling",
+      "color": "#3b82f6",
+      "subject": "C++",
+      "items": [
+        {
+          "id": 1764350670014.1802,
+          "text": "Associate, Generalize, Specialize relationships between classes",
+          "completed": false
+        },
+        {
+          "id": 1764350670014.7258,
+          "text": "Understand Aggregation and Composition concepts",
+          "completed": false
+        },
+        {
+          "id": 1764350670014.2268,
+          "text": "Study Object Modeling Technique (OMT)",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350670014.2883,
+      "title": "Dynamic and Functional Modeling",
+      "color": "#3b82f6",
+      "subject": "C++",
+      "items": [
+        {
+          "id": 1764350670014.4978,
+          "text": "Learn Events in Dynamic modeling",
+          "completed": false
+        },
+        {
+          "id": 1764350670014.683,
+          "text": "Understand State diagrams and concurrency",
+          "completed": false
+        },
+        {
+          "id": 1764350670014.2344,
+          "text": "Relationships between object and dynamic models",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350670014.9631,
+      "title": "Core Programming Concepts",
+      "color": "#3b82f6",
+      "subject": "C++",
+      "items": [
+        {
+          "id": 1764350670014.9653,
+          "text": "Program Structure in C++",
+          "completed": false
+        },
+        {
+          "id": 1764350670014.0493,
+          "text": "iostream, namespace, header files basics",
+          "completed": false
+        },
+        {
+          "id": 1764350670014.4897,
+          "text": "Classes and Objects basics",
+          "completed": false
+        },
+        {
+          "id": 1764350670014.4265,
+          "text": "Access specifiers, Member functions, this pointer",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350670014.6965,
+      "title": "Inheritance and Polymorphism",
+      "color": "#3b82f6",
+      "subject": "C++",
+      "items": [
+        {
+          "id": 1764350670014.9976,
+          "text": "Types of Inheritance (Single, Multiple, Multilevel, Hierarchical, Hybrid)",
+          "completed": false
+        },
+        {
+          "id": 1764350670014.4922,
+          "text": "Polymorphism Compile-time & Run-time concepts",
+          "completed": false
+        },
+        {
+          "id": 1764350670014.1423,
+          "text": "Abstract classes, Interfaces, Friend functions",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350670014.0642,
+      "title": "Advanced C++ Features",
+      "color": "#3b82f6",
+      "subject": "C++",
+      "items": [
+        {
+          "id": 1764350670014.8992,
+          "text": "Pointers with objects",
+          "completed": false
+        },
+        {
+          "id": 1764350670014.024,
+          "text": "Dynamic memory allocation (new, delete)",
+          "completed": false
+        },
+        {
+          "id": 1764350670014.9045,
+          "text": "File handling using streams",
+          "completed": false
+        },
+        {
+          "id": 1764350670014.9749,
+          "text": "Exception handling: try-catch-throw, custom exceptions",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350670014.1008,
+      "title": "Standard Template Library",
+      "color": "#3b82f6",
+      "subject": "C++",
+      "items": [
+        {
+          "id": 1764350670014.153,
+          "text": "Pairs, STL Components: Containers, Algorithms, Iterators",
+          "completed": false
+        },
+        {
+          "id": 1764350670014.669,
+          "text": "Sequential containers: vector, list, deque",
+          "completed": false
+        },
+        {
+          "id": 1764350670014.694,
+          "text": "Associative containers: set, multiset, map, multimap",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350811160.3777,
+      "title": "Finite Automaton",
+      "color": "#3b82f6",
+      "subject": "TOC",
+      "items": [
+        {
+          "id": 1764350811160.0952,
+          "text": "Study DFA formal definition, simplifier notations (state transition diagram, transition table), and Language of a DFA",
+          "completed": false
+        },
+        {
+          "id": 1764350811160.1082,
+          "text": "Understand Acceptance by a finite automaton, Deterministic and non-deterministic automaton (DFA and NFA), Equivalence of DFA and NFA, Minimization of states in a finite automaton",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350811160.2017,
+      "title": "Formal Languages and Grammar",
+      "color": "#3b82f6",
+      "subject": "TOC",
+      "items": [
+        {
+          "id": 1764350811160.566,
+          "text": "Study Regular expression, Identities of Regular Expressions, Finite Automata and regular expressions\u2014Converting from DFA\u2019s to Regular Expressions",
+          "completed": false
+        },
+        {
+          "id": 1764350811160.177,
+          "text": "Understand Converting Regular Expressions to Automata, applications of Regular Expressions, Chomsky\u2019s hierarchy, Regular grammar",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350811160.2095,
+      "title": "Formal Languages and Grammar (Continued)",
+      "color": "#3b82f6",
+      "subject": "TOC",
+      "items": [
+        {
+          "id": 1764350811160.627,
+          "text": "Study FA for regular grammar, Regular grammar for FA",
+          "completed": false
+        },
+        {
+          "id": 1764350811160.6868,
+          "text": "Understand Pumping lemma for regular sets, applications, Closure properties of regular languages",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350811160.8506,
+      "title": "Pushdown Automaton (PDA)",
+      "color": "#3b82f6",
+      "subject": "TOC",
+      "items": [
+        {
+          "id": 1764350811160.127,
+          "text": "Study PDA definition, Model, Acceptance of CFL, Acceptance by PDA using final state or empty stack",
+          "completed": false
+        },
+        {
+          "id": 1764350811160.8687,
+          "text": "Understand Context free language, Deterministic CFL, Deterministic PDA, Context free grammar and derivation trees",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350811160.2756,
+      "title": "Pushdown Automaton (PDA) (Continued)",
+      "color": "#3b82f6",
+      "subject": "TOC",
+      "items": [
+        {
+          "id": 1764350811160.3877,
+          "text": "Study Leftmost and rightmost derivation, Ambiguity in context free grammar, Minimization of CFG\u2019s",
+          "completed": false
+        },
+        {
+          "id": 1764350811160.7559,
+          "text": "Understand CNF, GNF, Pumping lemma for context free languages",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350811160.2798,
+      "title": "Turing Machine (TM)",
+      "color": "#3b82f6",
+      "subject": "TOC",
+      "items": [
+        {
+          "id": 1764350811160.7405,
+          "text": "Study TM as computable functions and accepters, Non-deterministic TM, type0 grammar",
+          "completed": false
+        },
+        {
+          "id": 1764350811160.2566,
+          "text": "Understand Halting problem of a TM, Linear bounded automaton (LBA) model",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350811160.582,
+      "title": "Turing Machine (TM) (Continued)",
+      "color": "#3b82f6",
+      "subject": "TOC",
+      "items": [
+        {
+          "id": 1764350811160.718,
+          "text": "Study Context sensitive languages and grammars",
+          "completed": false
+        },
+        {
+          "id": 1764350811160.0176,
+          "text": "Understand Recursively Enumerable Languages: Properties of recursive and recursively enumerable languages, Unsolvable Decision Problem",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": 1764350811160.3818,
+      "title": "Recursive and Recursively Enumerable Languages (Continued)",
+      "color": "#3b82f6",
+      "subject": "TOC",
+      "items": [
+        {
+          "id": 1764350811160.3462,
+          "text": "Study Decidability\u2013 Post\u2019s correspondence problem (PCP), Rice\u2019s theorem, Decidability of membership",
+          "completed": false
+        },
+        {
+          "id": 1764350811160.1428,
+          "text": "Understand Emptiness and equivalence problems of languages, P, NP, NP-Completeness; Satisfiability and Cook's theorem",
+          "completed": false
+        }
+      ]
+    }
+  ],
   "study_sessions": []
 }
