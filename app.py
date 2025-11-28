@@ -1,130 +1,206 @@
-import os
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import json
-import re
-import ollama
-from flask import Flask, render_template, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from pypdf import PdfReader
+import os
+from datetime import datetime
+import requests
+import PyPDF2
+from io import BytesIO
 
 app = Flask(__name__)
+CORS(app)
 
-# --- Database Config ---
-# This creates a file 'study.db' in your folder to save your data
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///study.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+# Data storage file
+DATA_FILE = 'study_data.json'
+OLLAMA_API = 'http://localhost:11434'
 
-# --- Models ---
-class Task(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.String(200), nullable=False)
-    completed = db.Column(db.Boolean, default=False)
+def load_data():
+    """Load data from JSON file"""
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, 'r') as f:
+            return json.load(f)
+    return {
+        'exams': [],
+        'checklist': [],
+        'study_sessions': []
+    }
 
-class Exam(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    subject = db.Column(db.String(100), nullable=False)
-    date = db.Column(db.String(20), nullable=False)
+def save_data(data):
+    """Save data to JSON file"""
+    with open(DATA_FILE, 'w') as f:
+        json.dump(data, f, indent=2)
 
-# Initialize Database
-with app.app_context():
-    db.create_all()
+@app.route('/api/data', methods=['GET', 'POST'])
+def handle_data():
+    """Get or update stored data"""
+    if request.method == 'GET':
+        return jsonify(load_data())
+    
+    elif request.method == 'POST':
+        data = load_data()
+        payload = request.json
+        data_type = payload.get('type')
+        new_data = payload.get('data')
+        
+        if data_type in data:
+            data[data_type] = new_data
+            save_data(data)
+            return jsonify({'success': True})
+        
+        return jsonify({'error': 'Invalid data type'}), 400
 
-# --- Routes ---
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/api/data', methods=['GET'])
-def get_data():
-    tasks = [{'id': t.id, 'text': t.text, 'completed': t.completed} for t in Task.query.all()]
-    exams = [{'id': e.id, 'subject': e.subject, 'date': e.date} for e in Exam.query.all()]
-    return jsonify({'tasks': tasks, 'exams': exams})
-
-@app.route('/api/tasks', methods=['POST'])
-def add_task():
-    data = request.json
-    new_task = Task(text=data['text'])
-    db.session.add(new_task)
-    db.session.commit()
-    return jsonify({'success': True})
-
-@app.route('/api/tasks/<int:id>/toggle', methods=['POST'])
-def toggle_task(id):
-    task = Task.query.get_or_404(id)
-    task.completed = not task.completed
-    db.session.commit()
-    return jsonify({'success': True})
-
-@app.route('/api/tasks/<int:id>', methods=['DELETE'])
-def delete_task(id):
-    task = Task.query.get_or_404(id)
-    db.session.delete(task)
-    db.session.commit()
-    return jsonify({'success': True})
-
-@app.route('/api/exams', methods=['POST'])
-def add_exam():
-    data = request.json
-    new_exam = Exam(subject=data['subject'], date=data['date'])
-    db.session.add(new_exam)
-    db.session.commit()
-    return jsonify({'success': True})
-
-@app.route('/api/exams/<int:id>', methods=['DELETE'])
-def delete_exam(id):
-    exam = Exam.query.get_or_404(id)
-    db.session.delete(exam)
-    db.session.commit()
-    return jsonify({'success': True})
-
-@app.route('/api/ai_process', methods=['POST'])
-def ai_process():
+@app.route('/api/ollama/models', methods=['GET'])
+def get_ollama_models():
+    """Fetch available Ollama models"""
     try:
-        model = request.form.get('model', 'llama3')
-        course = request.form.get('course', 'General')
-        raw_text = request.form.get('raw_text', '')
-        
-        if 'pdf_file' in request.files:
-            file = request.files['pdf_file']
-            if file.filename != '':
-                reader = PdfReader(file)
-                # Limit to first 10 pages to prevent huge prompts
-                for i, page in enumerate(reader.pages):
-                    if i > 10: break 
-                    raw_text += page.extract_text() + "\n"
-
-        if not raw_text.strip():
-            return jsonify({'error': 'No text found in PDF or input box'}), 400
-
-        prompt = f"""
-        I am a {course} student. 
-        Extract a study checklist from the following syllabus text.
-        Return ONLY a raw JSON array of strings. 
-        Do not use markdown formatting like ```json.
-        Just the array.
-        Example: ["Topic 1", "Topic 2"]
-        
-        Syllabus:
-        {raw_text[:8000]}
-        """
-
-        response = ollama.chat(model=model, messages=[{'role': 'user', 'content': prompt}])
-        content = response['message']['content']
-        
-        # Regex to find JSON array
-        match = re.search(r'\[.*\]', content, re.DOTALL)
-        if match:
-            topics = json.loads(match.group())
-            for topic in topics:
-                if isinstance(topic, str):
-                    db.session.add(Task(text=topic))
-            db.session.commit()
-            return jsonify({'success': True, 'count': len(topics)})
-        else:
-            return jsonify({'error': 'AI response was not a valid list. Try again.'}), 500
-
+        response = requests.get(f'{OLLAMA_API}/api/tags', timeout=5)
+        if response.status_code == 200:
+            models_data = response.json()
+            models = [model['name'] for model in models_data.get('models', [])]
+            return jsonify({'models': models})
+        return jsonify({'models': []})
     except Exception as e:
+        print(f"Error fetching Ollama models: {e}")
+        return jsonify({'models': []})
+
+@app.route('/api/generate-checklist', methods=['POST'])
+def generate_checklist():
+    """Generate study checklist using Ollama"""
+    try:
+        data = request.json
+        syllabus = data.get('syllabus', '')
+        course = data.get('course', '')
+        year = data.get('year', '')
+        model = data.get('model', 'llama2')
+        
+        prompt = f"""Based on this {course} syllabus for {year}, create a detailed study checklist.
+Break down the topics into specific, actionable study tasks.
+Return ONLY a numbered list of study topics/tasks, one per line.
+
+Syllabus:
+{syllabus}
+
+Format each item as: Topic - Subtopic or specific task
+Example: 
+1. Data Structures - Arrays and Linked Lists
+2. Algorithms - Sorting (Bubble, Quick, Merge)
+"""
+        
+        # Call Ollama API
+        response = requests.post(
+            f'{OLLAMA_API}/api/generate',
+            json={
+                'model': model,
+                'prompt': prompt,
+                'stream': False
+            },
+            timeout=120
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            generated_text = result.get('response', '')
+            
+            # Parse the response into checklist items
+            lines = generated_text.strip().split('\n')
+            checklist = []
+            
+            for line in lines:
+                line = line.strip()
+                # Remove numbering and clean up
+                if line and (line[0].isdigit() or line.startswith('-') or line.startswith('•')):
+                    # Remove leading numbers, dots, dashes, bullets
+                    cleaned = line.lstrip('0123456789.-•) ').strip()
+                    if cleaned and len(cleaned) > 5:
+                        checklist.append(cleaned)
+            
+            return jsonify({'checklist': checklist})
+        
+        return jsonify({'error': 'Failed to generate checklist'}), 500
+        
+    except Exception as e:
+        print(f"Error generating checklist: {e}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/upload-pdf', methods=['POST'])
+def upload_pdf():
+    """Extract text from uploaded PDF"""
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file uploaded'}), 400
+        
+        file = request.files['file']
+        
+        # Read PDF
+        pdf_reader = PyPDF2.PdfReader(BytesIO(file.read()))
+        text = ''
+        
+        for page in pdf_reader.pages:
+            text += page.extract_text() + '\n'
+        
+        return jsonify({'text': text.strip()})
+        
+    except Exception as e:
+        print(f"Error processing PDF: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/analytics', methods=['GET'])
+def get_analytics():
+    """Get study analytics"""
+    try:
+        data = load_data()
+        sessions = data.get('study_sessions', [])
+        
+        # Calculate statistics
+        total_sessions = len(sessions)
+        total_minutes = sum(session.get('duration', 25) for session in sessions)
+        
+        # Topics studied frequency
+        topic_frequency = {}
+        for session in sessions:
+            topics = session.get('topics', [])
+            for topic in topics:
+                topic_frequency[topic] = topic_frequency.get(topic, 0) + 1
+        
+        # Recent activity (last 7 days)
+        recent_sessions = []
+        for session in sessions[-7:]:
+            recent_sessions.append({
+                'date': session.get('date'),
+                'duration': session.get('duration', 25),
+                'topics': len(session.get('topics', []))
+            })
+        
+        return jsonify({
+            'total_sessions': total_sessions,
+            'total_minutes': total_minutes,
+            'topic_frequency': topic_frequency,
+            'recent_activity': recent_sessions
+        })
+        
+    except Exception as e:
+        print(f"Error getting analytics: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'healthy',
+        'timestamp': datetime.now().isoformat()
+    })
+
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    print("🚀 StudyFlow Backend Server Starting...")
+    print("📊 Server running on http://localhost:5000")
+    print("🤖 Make sure Ollama is running on http://localhost:11434")
+    print("\nAvailable endpoints:")
+    print("  GET  /api/data - Fetch all data")
+    print("  POST /api/data - Save data")
+    print("  GET  /api/ollama/models - Get Ollama models")
+    print("  POST /api/generate-checklist - Generate checklist with AI")
+    print("  POST /api/upload-pdf - Upload and extract PDF")
+    print("  GET  /api/analytics - Get study analytics")
+    print("  GET  /health - Health check")
+    
+    app.run(debug=True, host='0.0.0.0', port=5000)
