@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { exportData as compressData, importData as decompressData } from '../utils/dataHandler';
 
 const StudyContext = createContext();
 
@@ -10,20 +11,29 @@ export const useStudyContext = () => {
     return context;
 };
 
-const API_URL = `http://${window.location.hostname}:5000`;
-
 export const StudyProvider = ({ children }) => {
+    const [apiUrl, setApiUrl] = useState(() => {
+        return localStorage.getItem('custom_api_url') || `http://${window.location.hostname}:5000`;
+    });
+
     const [exams, setExams] = useState([]);
     const [checklist, setChecklist] = useState([]);
     const [studySessions, setStudySessions] = useState([]);
     const [ollamaModels, setOllamaModels] = useState([]);
     const [selectedModel, setSelectedModel] = useState('');
 
+    const updateApiUrl = (newUrl) => {
+        // Remove trailing slash if present
+        const cleanedUrl = newUrl.replace(/\/$/, '');
+        localStorage.setItem('custom_api_url', cleanedUrl);
+        setApiUrl(cleanedUrl);
+    };
+
     // Load data from storage
     useEffect(() => {
         const loadData = async () => {
             try {
-                const res = await fetch(`${API_URL}/api/data`);
+                const res = await fetch(`${apiUrl}/api/data`);
                 const data = await res.json();
                 setExams(data.exams || []);
                 setChecklist(data.checklist || []);
@@ -41,12 +51,12 @@ export const StudyProvider = ({ children }) => {
         };
         loadData();
         fetchOllamaModels();
-    }, []);
+    }, [apiUrl]);
 
     // Fetch Ollama models
     const fetchOllamaModels = async () => {
         try {
-            const res = await fetch(`${API_URL}/api/ollama/models`);
+            const res = await fetch(`${apiUrl}/api/ollama/models`);
             const data = await res.json();
             setOllamaModels(data.models || []);
             if (data.models?.length > 0) setSelectedModel(data.models[0]);
@@ -170,7 +180,8 @@ export const StudyProvider = ({ children }) => {
     };
 
     // --- Data Import/Export ---
-    const { exportData: compressData, importData: decompressData } = require('../utils/dataHandler');
+    // --- Data Import/Export ---
+    // Imported at top level
 
     // --- Sync Logic ---
     const [pendingSync, setPendingSync] = useState(() => {
@@ -191,7 +202,7 @@ export const StudyProvider = ({ children }) => {
 
         for (const item of queue) {
             try {
-                await fetch(`${API_URL}/api/data`, {
+                await fetch(`${apiUrl}/api/data`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(item)
@@ -212,7 +223,7 @@ export const StudyProvider = ({ children }) => {
             console.log('Back online, syncing...');
             syncPendingChanges();
             // Also fetch latest data
-            fetch(`${API_URL}/api/data`)
+            fetch(`${apiUrl}/api/data`)
                 .then(res => res.json())
                 .then(data => {
                     // Merge logic could go here, for now just simple update if newer
@@ -236,7 +247,7 @@ export const StudyProvider = ({ children }) => {
         }
 
         return () => window.removeEventListener('online', handleOnline);
-    }, [API_URL]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [apiUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Save data
     const saveData = async (type, data) => {
@@ -249,7 +260,7 @@ export const StudyProvider = ({ children }) => {
 
         // Try saving to API if available
         try {
-            await fetch(`${API_URL}/api/data`, {
+            await fetch(`${apiUrl}/api/data`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ type, data })
@@ -356,7 +367,8 @@ export const StudyProvider = ({ children }) => {
             updateChecklist,
             handleExport,
             handleImport,
-            API_URL
+            API_URL: apiUrl,
+            updateApiUrl
         }}>
             {children}
         </StudyContext.Provider>

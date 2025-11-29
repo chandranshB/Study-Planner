@@ -237,10 +237,11 @@ export default function Settings() {
 }
 
 function MobileSyncSection() {
-    const { API_URL } = useStudyContext();
+    const { API_URL, updateApiUrl } = useStudyContext();
     const [networkInfo, setNetworkInfo] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
-
+    const [customUrl, setCustomUrl] = React.useState(API_URL);
+    const [isEditingUrl, setIsEditingUrl] = React.useState(false);
 
     const fetchNetworkInfo = () => {
         setLoading(true);
@@ -265,7 +266,13 @@ function MobileSyncSection() {
         fetchNetworkInfo();
     }, [API_URL]);
 
+    const handleSaveUrl = () => {
+        updateApiUrl(customUrl);
+        setIsEditingUrl(false);
+    };
+
     const mobileUrl = networkInfo?.ip ? `http://${networkInfo.ip}:3000` : '';
+    const serverUrl = networkInfo?.ip ? `http://${networkInfo.ip}:5000` : '';
 
     return (
         <section className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
@@ -277,12 +284,44 @@ function MobileSyncSection() {
                 </div>
                 <div>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Mobile Sync</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Scan to connect your device</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Connect devices or configure server</p>
                 </div>
             </div>
 
+            {/* Server Configuration */}
+            <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-700 mb-6">
+                <h4 className="font-medium text-slate-900 dark:text-white mb-3">Server Connection</h4>
+                <div className="flex gap-2">
+                    <input
+                        type="text"
+                        value={customUrl}
+                        onChange={(e) => setCustomUrl(e.target.value)}
+                        disabled={!isEditingUrl}
+                        className={`flex-1 px-3 py-2 rounded-lg border ${isEditingUrl ? 'border-primary-500 bg-white dark:bg-slate-800' : 'border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-600 text-slate-500'} dark:text-white transition-colors`}
+                    />
+                    {isEditingUrl ? (
+                        <button
+                            onClick={handleSaveUrl}
+                            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                        >
+                            Save
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => setIsEditingUrl(true)}
+                            className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                        >
+                            Edit
+                        </button>
+                    )}
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                    Current Server: <span className="font-mono">{API_URL}</span>
+                </p>
+            </div>
+
             <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                <div className="hidden md:block bg-white p-4 rounded-xl shadow-sm border border-slate-200">
                     {loading ? (
                         <div className="w-48 h-48 flex items-center justify-center bg-slate-50 rounded-lg">
                             <span className="text-slate-400">Loading...</span>
@@ -312,11 +351,16 @@ function MobileSyncSection() {
                         </ol>
                     </div>
 
-                    {mobileUrl && (
-                        <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-700">
-                            <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1">Direct Link</p>
-                            <code className="text-primary-600 dark:text-primary-400 font-mono text-lg break-all">
-                                {mobileUrl}
+                    {serverUrl && (
+                        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-900/30">
+                            <p className="text-xs text-blue-600 dark:text-blue-300 uppercase tracking-wider font-semibold mb-1">
+                                Using a deployed app?
+                            </p>
+                            <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
+                                Enter this URL in your mobile app's settings:
+                            </p>
+                            <code className="block bg-white dark:bg-slate-800 p-2 rounded border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 font-mono text-sm break-all">
+                                {serverUrl}
                             </code>
                         </div>
                     )}
