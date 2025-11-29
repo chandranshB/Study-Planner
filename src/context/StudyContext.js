@@ -10,7 +10,7 @@ export const useStudyContext = () => {
     return context;
 };
 
-const API_URL = 'http://localhost:5000';
+const API_URL = `http://${window.location.hostname}:5000`;
 
 export const StudyProvider = ({ children }) => {
     const [exams, setExams] = useState([]);
@@ -29,8 +29,14 @@ export const StudyProvider = ({ children }) => {
                 setChecklist(data.checklist || []);
                 setStudySessions(data.study_sessions || []);
             } catch (err) {
-                console.log('Using local storage or fresh start');
-                // Fallback to localStorage if API fails? For now just log.
+                console.log('API unavailable, loading from local storage');
+                const localExams = localStorage.getItem('study_exams');
+                const localChecklist = localStorage.getItem('study_checklist');
+                const localSessions = localStorage.getItem('study_sessions');
+
+                if (localExams) setExams(JSON.parse(localExams));
+                if (localChecklist) setChecklist(JSON.parse(localChecklist));
+                if (localSessions) setStudySessions(JSON.parse(localSessions));
             }
         };
         loadData();
@@ -51,6 +57,14 @@ export const StudyProvider = ({ children }) => {
 
     // Save data
     const saveData = async (type, data) => {
+        // Always save to local storage for offline support
+        try {
+            localStorage.setItem(`study_${type}`, JSON.stringify(data));
+        } catch (e) {
+            console.error('Failed to save to local storage', e);
+        }
+
+        // Try saving to API if available
         try {
             await fetch(`${API_URL}/api/data`, {
                 method: 'POST',
@@ -58,7 +72,7 @@ export const StudyProvider = ({ children }) => {
                 body: JSON.stringify({ type, data })
             });
         } catch (err) {
-            console.error('Save failed');
+            console.warn('API save failed, data saved locally only');
         }
     };
 
