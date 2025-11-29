@@ -4,6 +4,8 @@ import { Palette, Trash2, AlertTriangle, Moon, Sun, Type, Layers } from 'lucide-
 import { useTheme } from '../context/ThemeContext';
 import { useStudyContext } from '../context/StudyContext';
 
+import QRCode from 'react-qr-code';
+
 export default function Settings() {
     const {
         colorTheme, setColorTheme,
@@ -238,7 +240,7 @@ function MobileSyncSection() {
     const { API_URL } = useStudyContext();
     const [networkInfo, setNetworkInfo] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
-    const QRCode = require('react-qr-code');
+
 
     const fetchNetworkInfo = () => {
         setLoading(true);

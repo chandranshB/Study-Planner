@@ -55,26 +55,7 @@ export const StudyProvider = ({ children }) => {
         }
     };
 
-    // Save data
-    const saveData = async (type, data) => {
-        // Always save to local storage for offline support
-        try {
-            localStorage.setItem(`study_${type}`, JSON.stringify(data));
-        } catch (e) {
-            console.error('Failed to save to local storage', e);
-        }
 
-        // Try saving to API if available
-        try {
-            await fetch(`${API_URL}/api/data`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type, data })
-            });
-        } catch (err) {
-            console.warn('API save failed, data saved locally only');
-        }
-    };
 
     // --- Actions ---
 
@@ -190,6 +171,94 @@ export const StudyProvider = ({ children }) => {
 
     // --- Data Import/Export ---
     const { exportData: compressData, importData: decompressData } = require('../utils/dataHandler');
+
+    // --- Sync Logic ---
+    const [pendingSync, setPendingSync] = useState(() => {
+        const saved = localStorage.getItem('study_pending_sync');
+        return saved ? JSON.parse(saved) : [];
+    });
+
+    useEffect(() => {
+        localStorage.setItem('study_pending_sync', JSON.stringify(pendingSync));
+    }, [pendingSync]);
+
+    const syncPendingChanges = async () => {
+        if (pendingSync.length === 0) return;
+
+        console.log('Syncing pending changes...', pendingSync.length);
+        const queue = [...pendingSync];
+        setPendingSync([]); // Clear queue optimistically, will re-add on failure
+
+        for (const item of queue) {
+            try {
+                await fetch(`${API_URL}/api/data`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(item)
+                });
+            } catch (err) {
+                console.error('Sync failed for item', item, err);
+                // Re-add to queue if failed
+                setPendingSync(prev => [...prev, item]);
+                return; // Stop syncing if one fails to maintain order
+            }
+        }
+        console.log('Sync complete');
+    };
+
+    // Listen for online status
+    useEffect(() => {
+        const handleOnline = () => {
+            console.log('Back online, syncing...');
+            syncPendingChanges();
+            // Also fetch latest data
+            fetch(`${API_URL}/api/data`)
+                .then(res => res.json())
+                .then(data => {
+                    // Merge logic could go here, for now just simple update if newer
+                    // Ideally we should use a proper merge strategy
+                    if (data.exams) setExams(prev => {
+                        // Simple merge: add missing, update existing if server has more items? 
+                        // For now, let's trust server if we just synced our changes
+                        return data.exams;
+                    });
+                    if (data.checklist) setChecklist(data.checklist);
+                    if (data.study_sessions) setStudySessions(data.study_sessions);
+                })
+                .catch(err => console.error('Fetch after sync failed', err));
+        };
+
+        window.addEventListener('online', handleOnline);
+
+        // Try to sync on load if online
+        if (navigator.onLine) {
+            syncPendingChanges();
+        }
+
+        return () => window.removeEventListener('online', handleOnline);
+    }, [API_URL]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Save data
+    const saveData = async (type, data) => {
+        // Always save to local storage for offline support
+        try {
+            localStorage.setItem(`study_${type}`, JSON.stringify(data));
+        } catch (e) {
+            console.error('Failed to save to local storage', e);
+        }
+
+        // Try saving to API if available
+        try {
+            await fetch(`${API_URL}/api/data`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type, data })
+            });
+        } catch (err) {
+            console.warn('API save failed, adding to pending sync');
+            setPendingSync(prev => [...prev, { type, data }]);
+        }
+    };
 
     const handleExport = async () => {
         const data = {

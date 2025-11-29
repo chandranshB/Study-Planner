@@ -64,11 +64,6 @@
           "completed": false,
           "id": 1764350550487.2783,
           "text": "Understand space and time complexity, asymptotic analysis, step counting, and time complexity analysis"
-        },
-        {
-          "id": 1764351618188,
-          "text": "Testing123",
-          "completed": false
         }
       ],
       "subject": "Data Structures",

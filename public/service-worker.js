@@ -2,7 +2,10 @@ const CACHE_NAME = 'studyflow-v1';
 const urlsToCache = [
     '/',
     '/index.html',
-    '/manifest.json'
+    '/manifest.json',
+    '/static/js/bundle.js',
+    '/static/js/main.chunk.js',
+    '/static/js/0.chunk.js'
 ];
 
 self.addEventListener('install', event => {
@@ -16,6 +19,11 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+    // API calls should go to network
+    if (event.request.url.includes('/api/')) {
+        return;
+    }
+
     event.respondWith(
         caches.match(event.request)
             .then(response => {
@@ -23,7 +31,24 @@ self.addEventListener('fetch', event => {
                 if (response) {
                     return response;
                 }
-                return fetch(event.request);
+                return fetch(event.request).then(
+                    function (response) {
+                        // Check if we received a valid response
+                        if (!response || response.status !== 200 || response.type !== 'basic') {
+                            return response;
+                        }
+
+                        // Clone the response
+                        var responseToCache = response.clone();
+
+                        caches.open(CACHE_NAME)
+                            .then(function (cache) {
+                                cache.put(event.request, responseToCache);
+                            });
+
+                        return response;
+                    }
+                );
             })
     );
 });

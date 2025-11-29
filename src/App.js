@@ -95,16 +95,13 @@ function StudyFlowContent() {
   };
 
   // Handle Exam Click
-  const [initialSubjectFilter, setInitialSubjectFilter] = useState('All');
-
   const handleExamClick = (exam) => {
     // Navigate to checklist with filter
     if (exam.subject) {
-      setInitialSubjectFilter(exam.subject);
+      navigate(`/checklist?subject=${encodeURIComponent(exam.subject)}`);
     } else {
-      setInitialSubjectFilter('All');
+      navigate('/checklist');
     }
-    navigate('/checklist');
   };
 
   return (
@@ -121,12 +118,7 @@ function StudyFlowContent() {
         <Route path="/exams" element={
           <Exams
             addExam={() => setIsExamModalOpen(true)}
-            onExamClick={(exam) => {
-              handleExamClick(exam);
-              // We need to navigate programmatically here if we want to switch tabs
-              // But we can't use useNavigate here because we are inside the component that defines Routes?
-              // Actually StudyFlowContent is inside BrowserRouter (in index.js), so we can use useNavigate hook!
-            }}
+            onExamClick={handleExamClick}
           />
         } />
 
@@ -140,8 +132,6 @@ function StudyFlowContent() {
             onAddItem={openAddItemModal}
             onEditTopic={openEditTopicModal}
             onEditItem={openEditItemModal}
-            initialFilter={initialSubjectFilter}
-            setInitialFilter={setInitialSubjectFilter}
           />
         } />
 
