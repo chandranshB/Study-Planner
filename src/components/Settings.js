@@ -346,22 +346,32 @@ function MobileSyncSection() {
                         <h4 className="font-medium text-slate-900 dark:text-white mb-1">How to connect:</h4>
                         <ol className="list-decimal list-inside space-y-2 text-slate-600 dark:text-slate-400 text-sm">
                             <li>Ensure your mobile device is on the <strong>same Wi-Fi network</strong>.</li>
-                            <li>Open your phone's camera or a QR scanner app.</li>
-                            <li>Scan the QR code to open the Study Planner.</li>
+                            <li>Open your phone's browser and go to:</li>
+                            <code className="block bg-slate-100 dark:bg-slate-900 p-2 rounded border border-slate-200 dark:border-slate-700 font-mono text-sm mb-2 select-all">
+                                {mobileUrl}
+                            </code>
+                            <li>Or scan the QR code above.</li>
                         </ol>
                     </div>
 
-                    {serverUrl && (
+                    {serverUrl ? (
                         <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-900/30">
                             <p className="text-xs text-blue-600 dark:text-blue-300 uppercase tracking-wider font-semibold mb-1">
-                                Using a deployed app?
+                                Connect from Mobile / Deployed App
                             </p>
                             <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
-                                Enter this URL in your mobile app's settings:
+                                <strong>Do not use localhost!</strong> Enter this URL on your other device:
                             </p>
-                            <code className="block bg-white dark:bg-slate-800 p-2 rounded border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 font-mono text-sm break-all">
+                            <code className="block bg-white dark:bg-slate-800 p-2 rounded border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 font-mono text-sm break-all select-all">
                                 {serverUrl}
                             </code>
+                        </div>
+                    ) : (
+                        <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-900/30">
+                            <p className="text-sm text-amber-800 dark:text-amber-200">
+                                <strong>Not connected to server.</strong><br />
+                                If you are on mobile, check your <strong>Desktop App</strong> settings to find the correct Server URL.
+                            </p>
                         </div>
                     )}
 
