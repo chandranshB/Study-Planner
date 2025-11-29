@@ -285,7 +285,7 @@ export default function Dashboard({ onAddExam }) {
                     </div>
 
                     {/* Recent Sessions */}
-                    <div className="glass-card p-6 rounded-2xl dark:bg-slate-800/50 dark:border-slate-700">
+                    <div className="hidden md:block glass-card p-6 rounded-2xl dark:bg-slate-800/50 dark:border-slate-700">
                         <h3 className="font-bold text-slate-900 dark:text-white mb-4">Recent Sessions</h3>
                         {studySessions.length === 0 ? (
                             <div className="text-center py-8 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-600">

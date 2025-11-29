@@ -201,6 +201,9 @@ export default function Settings() {
                 </div>
             </section>
 
+            {/* Mobile Sync */}
+            <MobileSyncSection />
+
             {/* Danger Zone */}
             <section className="bg-red-50 dark:bg-red-900/10 rounded-2xl p-6 border border-red-100 dark:border-red-900/30">
                 <div className="flex items-center space-x-3 mb-6">
@@ -228,5 +231,100 @@ export default function Settings() {
                 </div>
             </section>
         </div >
+    );
+}
+
+function MobileSyncSection() {
+    const { API_URL } = useStudyContext();
+    const [networkInfo, setNetworkInfo] = React.useState(null);
+    const [loading, setLoading] = React.useState(true);
+    const QRCode = require('react-qr-code');
+
+    const fetchNetworkInfo = () => {
+        setLoading(true);
+        setNetworkInfo(null);
+        fetch(`${API_URL}/api/network-info`)
+            .then(res => {
+                if (!res.ok) throw new Error('Endpoint not found');
+                return res.json();
+            })
+            .then(data => {
+                setNetworkInfo(data);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error('Failed to fetch network info', err);
+                setNetworkInfo(null);
+                setLoading(false);
+            });
+    };
+
+    React.useEffect(() => {
+        fetchNetworkInfo();
+    }, [API_URL]);
+
+    const mobileUrl = networkInfo?.ip ? `http://${networkInfo.ip}:3000` : '';
+
+    return (
+        <section className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
+            <div className="flex items-center space-x-3 mb-2">
+                <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                    <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Mobile Sync</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Scan to connect your device</p>
+                </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                    {loading ? (
+                        <div className="w-48 h-48 flex items-center justify-center bg-slate-50 rounded-lg">
+                            <span className="text-slate-400">Loading...</span>
+                        </div>
+                    ) : mobileUrl ? (
+                        <QRCode value={mobileUrl} size={192} />
+                    ) : (
+                        <div className="w-48 h-48 flex flex-col items-center justify-center bg-slate-50 rounded-lg p-4 text-center space-y-3">
+                            <span className="text-slate-400 text-sm">Server Offline</span>
+                            <button
+                                onClick={fetchNetworkInfo}
+                                className="px-3 py-1.5 bg-primary-100 text-primary-700 rounded-lg text-xs font-bold hover:bg-primary-200 transition-colors"
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex-1 space-y-4">
+                    <div>
+                        <h4 className="font-medium text-slate-900 dark:text-white mb-1">How to connect:</h4>
+                        <ol className="list-decimal list-inside space-y-2 text-slate-600 dark:text-slate-400 text-sm">
+                            <li>Ensure your mobile device is on the <strong>same Wi-Fi network</strong>.</li>
+                            <li>Open your phone's camera or a QR scanner app.</li>
+                            <li>Scan the QR code to open the Study Planner.</li>
+                        </ol>
+                    </div>
+
+                    {mobileUrl && (
+                        <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1">Direct Link</p>
+                            <code className="text-primary-600 dark:text-primary-400 font-mono text-lg break-all">
+                                {mobileUrl}
+                            </code>
+                        </div>
+                    )}
+
+                    <div className="flex items-center space-x-2 text-sm text-slate-500">
+                        <div className={`w-2 h-2 rounded-full ${networkInfo ? 'bg-green-500' : 'bg-red-500'}`} />
+                        <span>Server Status: {networkInfo ? 'Online' : 'Offline'}</span>
+                    </div>
+                </div>
+            </div>
+        </section>
     );
 }

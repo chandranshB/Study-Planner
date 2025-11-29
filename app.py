@@ -6,6 +6,7 @@ from datetime import datetime
 import requests
 import PyPDF2
 from io import BytesIO
+import socket
 
 app = Flask(__name__)
 CORS(app)
@@ -181,6 +182,24 @@ def get_analytics():
         print(f"Error getting analytics: {e}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/network-info', methods=['GET'])
+def get_network_info():
+    """Get local network IP address"""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # doesn't even have to be reachable
+            s.connect(('10.255.255.255', 1))
+            local_ip = s.getsockname()[0]
+        except Exception:
+            local_ip = '127.0.0.1'
+        finally:
+            s.close()
+            
+        return jsonify({'ip': local_ip, 'hostname': socket.gethostname()})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
@@ -200,6 +219,7 @@ if __name__ == '__main__':
     print("  POST /api/generate-checklist - Generate checklist with AI")
     print("  POST /api/upload-pdf - Upload and extract PDF")
     print("  GET  /api/analytics - Get study analytics")
+    print("  GET  /api/network-info - Get network info")
     print("  GET  /health - Health check")
     
     app.run(debug=True, host='0.0.0.0', port=5000)

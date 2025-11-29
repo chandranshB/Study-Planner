@@ -4,37 +4,50 @@
       "color": "#ef4444",
       "date": "2025-12-19",
       "id": 1764339543283,
-      "name": "Theory of Computation"
+      "name": "Theory of Computation",
+      "subject": "TOC"
     },
     {
       "color": "#f59e0b",
       "date": "2025-12-15",
       "id": 1764339602234,
-      "name": "Data Structures"
+      "name": "Data Structures",
+      "subject": "Data Structures"
     },
     {
       "color": "#3b82f6",
       "date": "2025-12-09",
       "id": 1764339632842,
-      "name": "Vedic Management"
+      "name": "Vedic Management",
+      "subject": "Vedic Management"
     },
     {
+      "color": "#ec4899",
+      "date": "2025-12-06",
       "id": 1764340028908,
       "name": "Garhwali",
-      "date": "2025-12-06",
-      "color": "#ec4899"
+      "subject": "Garhwali"
     },
     {
+      "color": "#8b5cf6",
+      "date": "2025-12-17",
       "id": 1764340053090,
       "name": "C++",
-      "date": "2025-12-17",
-      "color": "#8b5cf6"
+      "subject": "C++"
     },
     {
+      "color": "#f59e0b",
+      "date": "2025-12-11",
       "id": 1764340074369,
       "name": "Psychology",
-      "date": "2025-12-11",
-      "color": "#f59e0b"
+      "subject": "Psychology"
+    },
+    {
+      "id": 1764387783663,
+      "name": "DSD",
+      "date": "2025-12-16",
+      "color": "#ef4444",
+      "subject": "DSD"
     }
   ],
   "checklist": [
