@@ -7,6 +7,9 @@ import requests
 import PyPDF2
 from io import BytesIO
 import socket
+import numpy as np
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
 
 app = Flask(__name__)
 CORS(app)
@@ -14,6 +17,34 @@ CORS(app)
 # Data storage file
 DATA_FILE = 'study_data.json'
 OLLAMA_API = 'http://localhost:11434'
+
+# --- RAG Setup ---
+print("⏳ Loading Embedding Model... (This may take a moment)")
+try:
+    embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+    print("✅ Embedding Model Loaded")
+except Exception as e:
+    print(f"❌ Failed to load embedding model: {e}")
+    embedding_model = None
+
+# In-memory Vector Store
+# Structure: { 'chunks': ['text1', 'text2'], 'embeddings': np.array([[...], [...]]), 'source': 'filename' }
+VECTOR_STORE = {
+    'chunks': [],
+    'embeddings': None,
+    'source': None
+}
+
+def chunk_text(text, chunk_size=500, overlap=50):
+    """Split text into overlapping chunks"""
+    chunks = []
+    start = 0
+    while start < len(text):
+        end = start + chunk_size
+        chunk = text[start:end]
+        chunks.append(chunk)
+        start += chunk_size - overlap
+    return chunks
 
 def load_data():
     """Load data from JSON file"""
@@ -124,12 +155,13 @@ Syllabus:
 
 @app.route('/api/upload-pdf', methods=['POST'])
 def upload_pdf():
-    """Extract text from uploaded PDF"""
+    """Extract text from uploaded PDF and process for RAG"""
     try:
         if 'file' not in request.files:
             return jsonify({'error': 'No file uploaded'}), 400
         
         file = request.files['file']
+        filename = file.filename
         
         # Read PDF
         pdf_reader = PyPDF2.PdfReader(BytesIO(file.read()))
@@ -138,10 +170,79 @@ def upload_pdf():
         for page in pdf_reader.pages:
             text += page.extract_text() + '\n'
         
-        return jsonify({'text': text.strip()})
+        text = text.strip()
+        
+        # Process for RAG
+        if embedding_model:
+            chunks = chunk_text(text)
+            embeddings = embedding_model.encode(chunks)
+            
+            VECTOR_STORE['chunks'] = chunks
+            VECTOR_STORE['embeddings'] = embeddings
+            VECTOR_STORE['source'] = filename
+            print(f"✅ Processed {len(chunks)} chunks for {filename}")
+        
+        return jsonify({'text': text, 'chunks': len(VECTOR_STORE['chunks'])})
         
     except Exception as e:
         print(f"Error processing PDF: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/chat', methods=['POST'])
+def chat_endpoint():
+    """RAG-enhanced Chat Endpoint"""
+    try:
+        data = request.json
+        user_message = data.get('message', '')
+        history = data.get('history', [])
+        
+        if not user_message:
+            return jsonify({'error': 'Message required'}), 400
+
+        context = ""
+        
+        # Retrieve Context
+        if embedding_model and VECTOR_STORE['embeddings'] is not None:
+            query_embedding = embedding_model.encode([user_message])
+            similarities = cosine_similarity(query_embedding, VECTOR_STORE['embeddings'])[0]
+            
+            # Get top 3 chunks
+            top_indices = np.argsort(similarities)[-3:][::-1]
+            top_chunks = [VECTOR_STORE['chunks'][i] for i in top_indices]
+            context = "\n\n".join(top_chunks)
+            print(f"🔍 Retrieved {len(top_chunks)} chunks for context")
+
+        # Construct Prompt
+        system_prompt = f"""You are an AI Tutor. Use the following CONTEXT from the user's document to answer their question.
+If the answer is not in the context, say you don't know based on the document, but try to help with general knowledge (and explicitly state it's general knowledge).
+Keep answers concise and helpful.
+
+CONTEXT:
+{context}
+"""
+        
+        # Format for Ollama
+        full_prompt = f"{system_prompt}\n\nUser: {user_message}\nAssistant:"
+        
+        # Call Ollama
+        response = requests.post(
+            f'{OLLAMA_API}/api/generate',
+            json={
+                'model': 'llama2', # Default
+                'prompt': full_prompt,
+                'stream': False
+            },
+            timeout=60
+        )
+        
+        if response.status_code == 200:
+            ai_response = response.json().get('response', '')
+            return jsonify({'response': ai_response})
+        else:
+            return jsonify({'error': 'Ollama API failed'}), 500
+
+    except Exception as e:
+        print(f"Error in chat: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/analytics', methods=['GET'])
@@ -218,6 +319,7 @@ if __name__ == '__main__':
     print("  GET  /api/ollama/models - Get Ollama models")
     print("  POST /api/generate-checklist - Generate checklist with AI")
     print("  POST /api/upload-pdf - Upload and extract PDF")
+    print("  POST /api/chat - RAG Chat")
     print("  GET  /api/analytics - Get study analytics")
     print("  GET  /api/network-info - Get network info")
     print("  GET  /health - Health check")

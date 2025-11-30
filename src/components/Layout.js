@@ -33,6 +33,7 @@ export default function Layout({ children }) {
 
     const menuItems = [
         { id: 'ai-generator', label: 'AI Generate', icon: Sparkles, path: '/ai-generator' },
+        { id: 'ai-tutor', label: 'AI Tutor', icon: Sparkles, path: '/ai-tutor' },
         { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
     ];
 

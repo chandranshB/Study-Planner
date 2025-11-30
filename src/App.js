@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
+import { ThemeProvider } from './context/ThemeContext';
+import { StudyProvider, useStudyContext } from './context/StudyContext';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import Pomodoro from './components/Pomodoro';
 import Exams from './components/Exams';
 import Checklist from './components/Checklist';
 import AIGenerator from './components/AIGenerator';
+import AITutor from './components/AITutor';
 import Settings from './components/Settings';
 import Modal from './components/Modal';
-import { ThemeProvider } from './context/ThemeContext';
-import { StudyProvider, useStudyContext } from './context/StudyContext';
+
+
+
 
 function StudyFlowContent() {
   const navigate = useNavigate();
@@ -136,6 +140,7 @@ function StudyFlowContent() {
         } />
 
         <Route path="/ai-generator" element={<AIGenerator />} />
+        <Route path="/ai-tutor" element={<AITutor />} />
 
         <Route path="/settings" element={<Settings />} />
       </Routes>
