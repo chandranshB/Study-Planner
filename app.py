@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 import json
 import os
@@ -137,15 +137,22 @@ Syllabus:
             result = response.json()
             generated_text = result.get('response', '')
             
+            # Clean up markdown code blocks if present
+            if "```json" in generated_text:
+                generated_text = generated_text.split("```json")[1].split("```")[0].strip()
+            elif "```" in generated_text:
+                generated_text = generated_text.split("```")[1].split("```")[0].strip()
+            
             try:
                 # Parse the JSON response
                 data = json.loads(generated_text)
                 checklist = data.get('checklist', [])
                 return jsonify({'checklist': checklist})
-            except json.JSONDecodeError:
+            except json.JSONDecodeError as e:
                 # Fallback if JSON parsing fails
-                print("Failed to parse JSON response")
-                return jsonify({'error': 'Failed to parse AI response'}), 500
+                print(f"Failed to parse JSON response: {e}")
+                print(f"Raw response: {generated_text}")
+                return jsonify({'error': 'Failed to parse AI response. Check server logs.'}), 500
         
         return jsonify({'error': 'Failed to generate checklist'}), 500
         
@@ -182,73 +189,6 @@ def upload_pdf():
             VECTOR_STORE['source'] = filename
             print(f"✅ Processed {len(chunks)} chunks for {filename}")
         
-        return jsonify({'text': text, 'chunks': len(VECTOR_STORE['chunks'])})
-        
-    except Exception as e:
-        print(f"Error processing PDF: {e}")
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/chat', methods=['POST'])
-def chat_endpoint():
-    """RAG-enhanced Chat Endpoint"""
-    try:
-        data = request.json
-        user_message = data.get('message', '')
-        history = data.get('history', [])
-        
-        if not user_message:
-            return jsonify({'error': 'Message required'}), 400
-
-        context = ""
-        
-        # Retrieve Context
-        if embedding_model and VECTOR_STORE['embeddings'] is not None:
-            query_embedding = embedding_model.encode([user_message])
-            similarities = cosine_similarity(query_embedding, VECTOR_STORE['embeddings'])[0]
-            
-            # Get top 3 chunks
-            top_indices = np.argsort(similarities)[-3:][::-1]
-            top_chunks = [VECTOR_STORE['chunks'][i] for i in top_indices]
-            context = "\n\n".join(top_chunks)
-            print(f"🔍 Retrieved {len(top_chunks)} chunks for context")
-
-        # Construct Prompt
-        system_prompt = f"""You are an AI Tutor. Use the following CONTEXT from the user's document to answer their question.
-If the answer is not in the context, say you don't know based on the document, but try to help with general knowledge (and explicitly state it's general knowledge).
-Keep answers concise and helpful.
-
-CONTEXT:
-{context}
-"""
-        
-        # Format for Ollama
-        full_prompt = f"{system_prompt}\n\nUser: {user_message}\nAssistant:"
-        
-        # Call Ollama
-        response = requests.post(
-            f'{OLLAMA_API}/api/generate',
-            json={
-                'model': 'llama2', # Default
-                'prompt': full_prompt,
-                'stream': False
-            },
-            timeout=60
-        )
-        
-        if response.status_code == 200:
-            ai_response = response.json().get('response', '')
-            return jsonify({'response': ai_response})
-        else:
-            return jsonify({'error': 'Ollama API failed'}), 500
-
-    except Exception as e:
-        print(f"Error in chat: {e}")
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/analytics', methods=['GET'])
-def get_analytics():
-    """Get study analytics"""
-    try:
         data = load_data()
         sessions = data.get('study_sessions', [])
         

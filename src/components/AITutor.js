@@ -4,7 +4,7 @@ import { useStudyContext } from '../context/StudyContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AITutor() {
-    const { API_URL } = useStudyContext();
+    const { API_URL, selectedModel } = useStudyContext();
     const [messages, setMessages] = useState([
         { role: 'assistant', content: 'Hello! Upload a PDF study guide, and I can help you understand it better. Ask me anything about the content!' }
     ]);
@@ -67,17 +67,41 @@ export default function AITutor() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: userMessage,
-                    history: messages.filter(m => m.role !== 'system')
+                    history: messages.filter(m => m.role !== 'system'),
+                    model: selectedModel || 'llama2' // Send selected model
                 })
             });
 
-            const data = await res.json();
-            if (data.error) throw new Error(data.error);
+            if (!res.ok) throw new Error(res.statusText);
 
-            setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
+            // Create a placeholder message for the assistant
+            setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let aiResponse = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                aiResponse += chunk;
+
+                // Update the last message (assistant's response) with the new chunk
+                setMessages(prev => {
+                    const newMessages = [...prev];
+                    const lastMsg = newMessages[newMessages.length - 1];
+                    if (lastMsg.role === 'assistant') {
+                        lastMsg.content = aiResponse;
+                    }
+                    return newMessages;
+                });
+            }
+
         } catch (err) {
             console.error(err);
-            setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error. Please make sure the backend is running and a PDF is uploaded.' }]);
+            setMessages(prev => [...prev, { role: 'assistant', content: `Sorry, I encountered an error: ${err.message}. Please check if the backend is running.` }]);
         } finally {
             setIsLoading(false);
         }
@@ -100,8 +124,8 @@ export default function AITutor() {
                 </div>
 
                 <label className={`flex items-center gap-2 px-4 py-2 rounded-xl cursor-pointer transition-all ${isUploading
-                        ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
-                        : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40'
+                    ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
+                    : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40'
                     }`}>
                     {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                     <span className="text-sm font-medium">{isUploading ? 'Processing...' : 'Upload PDF'}</span>
@@ -120,8 +144,8 @@ export default function AITutor() {
                             className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
                         >
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user'
-                                    ? 'bg-slate-200 dark:bg-slate-700'
-                                    : 'bg-indigo-100 dark:bg-indigo-900/30'
+                                ? 'bg-slate-200 dark:bg-slate-700'
+                                : 'bg-indigo-100 dark:bg-indigo-900/30'
                                 }`}>
                                 {msg.role === 'user'
                                     ? <User className="w-5 h-5 text-slate-600 dark:text-slate-300" />
@@ -129,8 +153,8 @@ export default function AITutor() {
                                 }
                             </div>
                             <div className={`max-w-[80%] p-3 rounded-2xl text-sm leading-relaxed ${msg.role === 'user'
-                                    ? 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-tr-none'
-                                    : 'bg-indigo-50 dark:bg-indigo-900/20 text-slate-800 dark:text-slate-200 rounded-tl-none'
+                                ? 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-tr-none'
+                                : 'bg-indigo-50 dark:bg-indigo-900/20 text-slate-800 dark:text-slate-200 rounded-tl-none'
                                 }`}>
                                 <div dangerouslySetInnerHTML={{ __html: msg.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>') }} />
                             </div>
